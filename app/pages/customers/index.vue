@@ -15,7 +15,6 @@ const toast = useToast()
 const customerStore = useCustomerStore()
 const table = useTemplateRef('table')
 
-const isAddModalOpen = ref(false)
 const columnVisibility = ref({})
 const rowSelection = ref({})
 const pagination = ref({ pageIndex: 0, pageSize: 20 })
@@ -34,7 +33,7 @@ const allTags = computed(() => {
 
 // Client-side filtered customers
 const filteredCustomers = computed(() => {
-  return customerStore.customers.filter(c => {
+  return customerStore.customers.filter((c) => {
     const matchCode = !filterCode.value
       || c.code.toLowerCase().includes(filterCode.value.toLowerCase())
       || c.id.toLowerCase().includes(filterCode.value.toLowerCase())
@@ -163,7 +162,7 @@ const columns: TableColumn<Customer>[] = [
           <UButton
             icon="i-lucide-plus"
             label="顧客追加"
-            @click="isAddModalOpen = true"
+            @click="router.push('/customers/new')"
           />
         </template>
       </UDashboardNavbar>
@@ -244,6 +243,4 @@ const columns: TableColumn<Customer>[] = [
       </div>
     </template>
   </UDashboardPanel>
-
-  <CustomersAddModal v-model:open="isAddModalOpen" @saved="customerStore.fetchCustomers()" />
 </template>
