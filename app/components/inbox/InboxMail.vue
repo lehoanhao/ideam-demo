@@ -9,16 +9,16 @@ defineProps<{
 const emits = defineEmits(['close'])
 
 const dropdownItems = [[{
-  label: 'Mark as unread',
+  label: '未読にする',
   icon: 'i-lucide-check-circle'
 }, {
-  label: 'Mark as important',
+  label: '重要にマーク',
   icon: 'i-lucide-triangle-alert'
 }], [{
-  label: 'Star thread',
+  label: 'スターをつける',
   icon: 'i-lucide-star'
 }, {
-  label: 'Mute thread',
+  label: 'ミュートする',
   icon: 'i-lucide-circle-pause'
 }]]
 
@@ -34,8 +34,8 @@ function onSubmit() {
     reply.value = ''
 
     toast.add({
-      title: 'Email sent',
-      description: 'Your email has been sent successfully',
+      title: 'メールを送信しました',
+      description: 'メールの送信が完了しました',
       icon: 'i-lucide-check-circle',
       color: 'success'
     })
@@ -59,7 +59,7 @@ function onSubmit() {
       </template>
 
       <template #right>
-        <UTooltip text="Archive">
+        <UTooltip text="アーカイブ">
           <UButton
             icon="i-lucide-inbox"
             color="neutral"
@@ -67,7 +67,7 @@ function onSubmit() {
           />
         </UTooltip>
 
-        <UTooltip text="Reply">
+        <UTooltip text="返信">
           <UButton icon="i-lucide-reply" color="neutral" variant="ghost" />
         </UTooltip>
 
@@ -116,7 +116,7 @@ function onSubmit() {
           <UIcon name="i-lucide-reply" class="size-5" />
 
           <span class="text-sm truncate">
-            Reply to {{ mail.from.name }} ({{ mail.from.email }})
+            {{ mail.from.name }} ({{ mail.from.email }}) へ返信
           </span>
         </template>
 
@@ -127,7 +127,7 @@ function onSubmit() {
             variant="none"
             required
             autoresize
-            placeholder="Write your reply..."
+            placeholder="返信を入力..."
             :rows="4"
             :disabled="loading"
             class="w-full"
@@ -135,7 +135,7 @@ function onSubmit() {
           />
 
           <div class="flex items-center justify-between">
-            <UTooltip text="Attach file">
+            <UTooltip text="ファイルを添付">
               <UButton
                 color="neutral"
                 variant="ghost"
@@ -147,13 +147,13 @@ function onSubmit() {
               <UButton
                 color="neutral"
                 variant="ghost"
-                label="Save draft"
+                label="下書きを保存"
               />
               <UButton
                 type="submit"
                 color="neutral"
                 :loading="loading"
-                label="Send"
+                label="送信"
                 icon="i-lucide-send"
               />
             </div>

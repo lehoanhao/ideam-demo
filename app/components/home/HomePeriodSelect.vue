@@ -36,6 +36,11 @@ watch(periods, () => {
     model.value = periods.value[0]!
   }
 })
+const periodLabelMap: Record<string, string> = {
+  daily: '日別',
+  weekly: '週別',
+  monthly: '月別'
+}
 </script>
 
 <template>

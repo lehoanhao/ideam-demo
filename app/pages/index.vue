@@ -6,11 +6,11 @@ import type { Period, Range } from '~/types'
 const { isNotificationsSlideoverOpen } = useDashboard()
 
 const items = [[{
-  label: 'New mail',
-  icon: 'i-lucide-send',
-  to: '/inbox'
+  label: '新規提案',
+  icon: 'i-lucide-file-plus',
+  to: '/proposals/new'
 }, {
-  label: 'New customer',
+  label: '顧客追加',
   icon: 'i-lucide-user-plus',
   to: '/customers'
 }]] satisfies DropdownMenuItem[][]
@@ -25,13 +25,13 @@ const period = ref<Period>('daily')
 <template>
   <UDashboardPanel id="home">
     <template #header>
-      <UDashboardNavbar title="Home" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar title="ダッシュボード" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
-          <UTooltip text="Notifications" :shortcuts="['N']">
+          <UTooltip text="通知" :shortcuts="['N']">
             <UButton
               color="neutral"
               variant="ghost"

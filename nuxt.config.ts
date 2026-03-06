@@ -3,7 +3,9 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',
-    '@vueuse/nuxt'
+    '@nuxt/fonts',
+    '@vueuse/nuxt',
+    '@pinia/nuxt'
   ],
 
   devtools: {
@@ -15,6 +17,12 @@ export default defineNuxtConfig({
   routeRules: {
     '/api/**': {
       cors: true
+    }
+  },
+
+  router: {
+    options: {
+      scrollBehaviorType: 'smooth'
     }
   },
 

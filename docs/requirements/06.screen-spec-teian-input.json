@@ -1,0 +1,629 @@
+{
+  "version": "1.0",
+  "source_images": ["current-system-1.jpeg", "current-system-2.png"],
+  "screen": {
+    "id": "proposal_entry",
+    "name_ja": "提案入力",
+    "name_en": "Proposal Entry",
+    "description": "Proposal master + line items entry screen. Used by Sales to register/edit a proposal, manage approval statuses, dates, classifications, rivals, notes, and detailed line items.",
+    "primary_roles": ["sales"],
+    "related_roles": ["procurement", "approver_ceo", "admin"],
+    "layout": {
+      "sections": [
+        {
+          "id": "header",
+          "name": "Header / Top controls",
+          "order": 1
+        },
+        {
+          "id": "approval_budget",
+          "name": "Approval & Budget",
+          "order": 2
+        },
+        {
+          "id": "classification",
+          "name": "Department / Categories",
+          "order": 3
+        },
+        {
+          "id": "rivals",
+          "name": "Rival / Competitor",
+          "order": 4
+        },
+        {
+          "id": "notes_audit",
+          "name": "Notes & mini audit",
+          "order": 5
+        },
+        {
+          "id": "mini_summary_grid",
+          "name": "Mini summary table",
+          "order": 6
+        },
+        {
+          "id": "line_items_grid",
+          "name": "Main line items grid",
+          "order": 7
+        }
+      ]
+    }
+  },
+  "entities": {
+    "proposal": {
+      "description": "提案 (proposal) master record",
+      "primary_key": "proposal_id",
+      "fields": [
+        {
+          "key": "process_type",
+          "label_ja": "処理区分",
+          "label_en": "Process Type",
+          "type": "enum",
+          "ui": { "section": "header", "control": "select", "order": 10 },
+          "required": true,
+          "enum": [
+            { "value": "1", "label_ja": "登録", "label_en": "Create/Register" },
+            { "value": "2", "label_ja": "修正", "label_en": "Edit/Modify" },
+            { "value": "3", "label_ja": "業務", "label_en": "Operations" }
+          ],
+          "notes": "Values inferred from screenshot."
+        },
+        {
+          "key": "owner_user",
+          "label_ja": "担当者",
+          "label_en": "Owner",
+          "type": "reference",
+          "ref": { "entity": "user", "display": "name", "value": "id" },
+          "ui": { "section": "header", "control": "select", "order": 20 },
+          "required": true,
+          "example": "18: 加藤誠"
+        },
+        {
+          "key": "customer",
+          "label_ja": "顧客",
+          "label_en": "Customer",
+          "type": "reference",
+          "ref": { "entity": "customer", "display": "name", "value": "id" },
+          "ui": { "section": "header", "control": "select", "order": 30, "searchable": true },
+          "required": true,
+          "example": "00705: JA愛知西 ..."
+        },
+        {
+          "key": "proposal_id",
+          "label_ja": "ID",
+          "label_en": "ID",
+          "type": "string",
+          "ui": { "section": "header", "control": "text", "order": 40, "read_only": true },
+          "required": false,
+          "notes": "Likely system-generated."
+        },
+        {
+          "key": "proposal_no",
+          "label_ja": "提案No",
+          "label_en": "Proposal No",
+          "type": "string",
+          "ui": { "section": "header", "control": "text", "order": 50, "read_only": true },
+          "required": false
+        },
+        {
+          "key": "action_view",
+          "label_ja": "表示",
+          "label_en": "Display",
+          "type": "action",
+          "ui": { "section": "header", "control": "button", "order": 60 },
+          "required": false,
+          "action": { "type": "load_record", "inputs": ["proposal_id", "proposal_no"] }
+        },
+        {
+          "key": "action_delete",
+          "label_ja": "削除",
+          "label_en": "Delete",
+          "type": "action",
+          "ui": { "section": "header", "control": "checkbox_or_button", "order": 70 },
+          "required": false,
+          "notes": "Screenshot looks like a checkbox next to label 削除. Confirm desired UX."
+        },
+        {
+          "key": "created_at",
+          "label_ja": "作成日",
+          "label_en": "Created Date",
+          "type": "date",
+          "ui": { "section": "header", "control": "date", "order": 80, "read_only": true },
+          "required": false
+        },
+        {
+          "key": "updated_at",
+          "label_ja": "最終更新日",
+          "label_en": "Last Updated",
+          "type": "date",
+          "ui": { "section": "header", "control": "date", "order": 90, "read_only": true },
+          "required": false
+        },
+        {
+          "key": "proposal_date",
+          "label_ja": "提案日",
+          "label_en": "Proposal Date",
+          "type": "date",
+          "ui": { "section": "header", "control": "date", "order": 100 },
+          "required": false,
+          "example": "26/03/10",
+          "notes": "Date format in legacy UI appears YY/MM/DD."
+        },
+        {
+          "key": "decision_date",
+          "label_ja": "決定日",
+          "label_en": "Decision Date",
+          "type": "date",
+          "ui": { "section": "header", "control": "date", "order": 110 },
+          "required": false,
+          "example": "26/03/30"
+        },
+        {
+          "key": "delivery_date",
+          "label_ja": "納入日",
+          "label_en": "Delivery Date",
+          "type": "date",
+          "ui": { "section": "header", "control": "date", "order": 120 },
+          "required": false,
+          "example": "26/04/20"
+        },
+        {
+          "key": "list_up_posted",
+          "label_ja": "リストアップ計上",
+          "label_en": "List-up Posted",
+          "type": "boolean",
+          "ui": { "section": "header", "control": "checkbox", "order": 130 },
+          "required": false,
+          "default": false
+        },
+        {
+          "key": "r_approval_status",
+          "label_ja": "R承認",
+          "label_en": "R Approval",
+          "type": "string",
+          "ui": { "section": "approval_budget", "control": "status_or_select", "order": 10 },
+          "required": false,
+          "notes": "Exact meaning and allowed values are TBD."
+        },
+        {
+          "key": "r_requires_approval",
+          "label_ja": "要承認",
+          "label_en": "Requires Approval",
+          "type": "boolean",
+          "ui": { "section": "approval_budget", "control": "badge_or_checkbox", "order": 20 },
+          "required": false,
+          "notes": "Shown adjacent to R承認."
+        },
+        {
+          "key": "p_approval_status",
+          "label_ja": "P承認",
+          "label_en": "P Approval",
+          "type": "string",
+          "ui": { "section": "approval_budget", "control": "status_or_select", "order": 30 },
+          "required": false,
+          "notes": "Exact meaning and allowed values are TBD."
+        },
+        {
+          "key": "p_requires_approval",
+          "label_ja": "要承認",
+          "label_en": "Requires Approval",
+          "type": "boolean",
+          "ui": { "section": "approval_budget", "control": "badge_or_checkbox", "order": 40 },
+          "required": false,
+          "notes": "Shown adjacent to P承認."
+        },
+        {
+          "key": "budget_total",
+          "label_ja": "予算合計",
+          "label_en": "Budget Total",
+          "type": "number",
+          "ui": { "section": "approval_budget", "control": "number", "order": 50, "read_only": true },
+          "required": false,
+          "example": 4000000,
+          "format": { "thousand_separator": true, "decimals": 0 }
+        },
+        {
+          "key": "budget_note",
+          "label_ja": "予算備考",
+          "label_en": "Budget Note",
+          "type": "string",
+          "ui": { "section": "approval_budget", "control": "text", "order": 60 },
+          "required": false,
+          "example": "4000個×1000円"
+        },
+        {
+          "key": "department",
+          "label_ja": "部門",
+          "label_en": "Department",
+          "type": "reference",
+          "ref": { "entity": "department", "display": "name", "value": "code" },
+          "ui": { "section": "classification", "control": "select", "order": 10 },
+          "required": false,
+          "example": "A: 総務"
+        },
+        {
+          "key": "category_lv1",
+          "label_ja": "大���類",
+          "label_en": "Major Category",
+          "type": "reference",
+          "ref": { "entity": "category_lv1", "display": "name", "value": "code" },
+          "ui": { "section": "classification", "control": "select", "order": 20 },
+          "required": false,
+          "example": "A01: 総代会"
+        },
+        {
+          "key": "purpose",
+          "label_ja": "目的",
+          "label_en": "Purpose",
+          "type": "reference",
+          "ref": { "entity": "purpose", "display": "name", "value": "code" },
+          "ui": { "section": "classification", "control": "select", "order": 30 },
+          "required": false,
+          "example": "A0103: 総代会組合員記念"
+        },
+        {
+          "key": "proper_name",
+          "label_ja": "固有名",
+          "label_en": "Proper Name",
+          "type": "string",
+          "ui": { "section": "classification", "control": "text", "order": 40 },
+          "required": false,
+          "example": "総代会組合員記念"
+        },
+        {
+          "key": "rival_1",
+          "label_ja": "ライバル",
+          "label_en": "Rival 1",
+          "type": "reference",
+          "ref": { "entity": "rival", "display": "name", "value": "id" },
+          "ui": { "section": "rivals", "control": "select", "order": 10 },
+          "required": false
+        },
+        {
+          "key": "rival_2",
+          "label_ja": "ライバル",
+          "label_en": "Rival 2",
+          "type": "reference",
+          "ref": { "entity": "rival", "display": "name", "value": "id" },
+          "ui": { "section": "rivals", "control": "select", "order": 20 },
+          "required": false
+        },
+        {
+          "key": "rival_3",
+          "label_ja": "ライバル",
+          "label_en": "Rival 3",
+          "type": "reference",
+          "ref": { "entity": "rival", "display": "name", "value": "id" },
+          "ui": { "section": "rivals", "control": "select", "order": 30 },
+          "required": false
+        },
+        {
+          "key": "rival_4",
+          "label_ja": "ライバル",
+          "label_en": "Rival 4",
+          "type": "reference",
+          "ref": { "entity": "rival", "display": "name", "value": "id" },
+          "ui": { "section": "rivals", "control": "select", "order": 40 },
+          "required": false
+        },
+        {
+          "key": "rival_note",
+          "label_ja": "ライバル備考",
+          "label_en": "Rival Notes",
+          "type": "string",
+          "ui": { "section": "rivals", "control": "text", "order": 50 },
+          "required": false
+        },
+        {
+          "key": "remarks",
+          "label_ja": "備考",
+          "label_en": "Remarks",
+          "type": "string",
+          "ui": { "section": "notes_audit", "control": "textarea", "order": 10 },
+          "required": false
+        },
+        {
+          "key": "line_add_date",
+          "label_ja": "行追加",
+          "label_en": "Row Add Date",
+          "type": "date",
+          "ui": { "section": "notes_audit", "control": "date", "order": 20 },
+          "required": false
+        },
+        {
+          "key": "line_add_note",
+          "label_ja": "行追加(備考)",
+          "label_en": "Row Add Note",
+          "type": "string",
+          "ui": { "section": "notes_audit", "control": "text", "order": 30 },
+          "required": false
+        },
+        {
+          "key": "change_date",
+          "label_ja": "変更",
+          "label_en": "Change Date",
+          "type": "date",
+          "ui": { "section": "notes_audit", "control": "date", "order": 40 },
+          "required": false
+        },
+        {
+          "key": "change_note",
+          "label_ja": "変更(備考)",
+          "label_en": "Change Note",
+          "type": "string",
+          "ui": { "section": "notes_audit", "control": "text", "order": 50 },
+          "required": false
+        }
+      ],
+      "derived_fields": [
+        {
+          "key": "budget_total",
+          "formula": "SUM(line_items[].budget_qty * line_items[].budget_unit_price)",
+          "notes": "Inferred from green budget cells and 予算合計."
+        }
+      ]
+    },
+    "proposal_line": {
+      "description": "提案明細 (proposal line item)",
+      "primary_key": "proposal_line_id",
+      "belongs_to": "proposal",
+      "fields": [
+        {
+          "key": "row_no",
+          "label_ja": "行",
+          "label_en": "Row No",
+          "type": "integer",
+          "ui": { "section": "line_items_grid", "control": "readonly", "grid_column_order": 10 },
+          "required": true
+        },
+        {
+          "key": "selected",
+          "label_ja": "選択",
+          "label_en": "Select",
+          "type": "boolean",
+          "ui": { "section": "line_items_grid", "control": "checkbox", "grid_column_order": 20 },
+          "required": false,
+          "default": false
+        },
+        {
+          "key": "budget_qty",
+          "label_ja": "予算数",
+          "label_en": "Budget Qty",
+          "type": "number",
+          "ui": { "section": "line_items_grid", "control": "number", "grid_column_order": 30, "style": "green_cell" },
+          "required": false,
+          "format": { "decimals": 0 }
+        },
+        {
+          "key": "budget_unit_price",
+          "label_ja": "予算単価",
+          "label_en": "Budget Unit Price",
+          "type": "number",
+          "ui": { "section": "line_items_grid", "control": "number", "grid_column_order": 40, "style": "green_cell" },
+          "required": false,
+          "format": { "decimals": 0 }
+        },
+        {
+          "key": "item_group",
+          "label_ja": "品群",
+          "label_en": "Item Group",
+          "type": "reference",
+          "ref": { "entity": "item_group", "display": "name", "value": "code" },
+          "ui": { "section": "line_items_grid", "control": "select", "grid_column_order": 50 },
+          "required": false,
+          "notes": "Dropdown list shown in image5 (e.g., 01: 食品, 02: 菓子...)."
+        },
+        {
+          "key": "catalog_name",
+          "label_ja": "カタログ名",
+          "label_en": "Catalog Name",
+          "type": "string",
+          "ui": { "section": "line_items_grid", "control": "text", "grid_column_order": 60 },
+          "required": false
+        },
+        {
+          "key": "item_no",
+          "label_ja": "品番",
+          "label_en": "Item No (SKU)",
+          "type": "string",
+          "ui": { "section": "line_items_grid", "control": "text", "grid_column_order": 70 },
+          "required": false
+        },
+        {
+          "key": "catalog_page",
+          "label_ja": "掲載ページ",
+          "label_en": "Catalog Page",
+          "type": "string",
+          "ui": { "section": "line_items_grid", "control": "text", "grid_column_order": 80 },
+          "required": false
+        },
+        {
+          "key": "manufacturer_name",
+          "label_ja": "メーカー名",
+          "label_en": "Manufacturer",
+          "type": "reference_or_string",
+          "ref": { "entity": "manufacturer", "display": "name", "value": "id" },
+          "ui": { "section": "line_items_grid", "control": "select_or_text", "grid_column_order": 90 },
+          "required": false
+        },
+        {
+          "key": "item_name",
+          "label_ja": "品名",
+          "label_en": "Item Name",
+          "type": "string",
+          "ui": { "section": "line_items_grid", "control": "text", "grid_column_order": 100 },
+          "required": false
+        },
+        {
+          "key": "account_target",
+          "label_ja": "帳合先",
+          "label_en": "Account Target / Wholesaler",
+          "type": "string",
+          "ui": { "section": "line_items_grid", "control": "text_or_select", "grid_column_order": 110 },
+          "required": false
+        },
+        {
+          "key": "line_note_cost_detail",
+          "label_ja": "備考(原価明細他)",
+          "label_en": "Notes (Cost details etc.)",
+          "type": "string",
+          "ui": { "section": "line_items_grid", "control": "text", "grid_column_order": 120 },
+          "required": false
+        },
+        {
+          "key": "rfq_type",
+          "label_ja": "見積依頼区分",
+          "label_en": "RFQ Type",
+          "type": "string",
+          "ui": { "section": "line_items_grid", "control": "select", "grid_column_order": 130 },
+          "required": false,
+          "notes": "Header appears combined with 依頼日 in legacy UI."
+        },
+        {
+          "key": "rfq_request_date",
+          "label_ja": "依頼日",
+          "label_en": "RFQ Request Date",
+          "type": "date",
+          "ui": { "section": "line_items_grid", "control": "date", "grid_column_order": 140 },
+          "required": false
+        },
+        {
+          "key": "delivery_due_date",
+          "label_ja": "納期",
+          "label_en": "Delivery Due Date",
+          "type": "date",
+          "ui": { "section": "line_items_grid", "control": "date", "grid_column_order": 150 },
+          "required": false,
+          "notes": "Header appears combined with 備考 in legacy UI."
+        },
+        {
+          "key": "delivery_note",
+          "label_ja": "備考(納期)",
+          "label_en": "Delivery Note",
+          "type": "string",
+          "ui": { "section": "line_items_grid", "control": "text", "grid_column_order": 160 },
+          "required": false
+        },
+        {
+          "key": "sales_unit_price",
+          "label_ja": "売上単価",
+          "label_en": "Sales Unit Price",
+          "type": "number",
+          "ui": { "section": "line_items_grid", "control": "number", "grid_column_order": 170 },
+          "required": false,
+          "format": { "decimals": 0 }
+        },
+        {
+          "key": "cost",
+          "label_ja": "原価",
+          "label_en": "Cost",
+          "type": "number",
+          "ui": { "section": "line_items_grid", "control": "number", "grid_column_order": 180 },
+          "required": false,
+          "format": { "decimals": 0 }
+        },
+        {
+          "key": "pack_qty",
+          "label_ja": "入数",
+          "label_en": "Pack Qty",
+          "type": "number",
+          "ui": { "section": "line_items_grid", "control": "number", "grid_column_order": 190 },
+          "required": false,
+          "format": { "decimals": 0 }
+        },
+        {
+          "key": "sample_qty",
+          "label_ja": "サンプル数",
+          "label_en": "Sample Qty",
+          "type": "number",
+          "ui": { "section": "line_items_grid", "control": "number", "grid_column_order": 200 },
+          "required": false,
+          "format": { "decimals": 0 },
+          "notes": "Header appears combined with 入荷日 in legacy UI."
+        },
+        {
+          "key": "arrival_date",
+          "label_ja": "入荷日",
+          "label_en": "Arrival Date",
+          "type": "date",
+          "ui": { "section": "line_items_grid", "control": "date", "grid_column_order": 210 },
+          "required": false
+        },
+        {
+          "key": "list_price",
+          "label_ja": "定価",
+          "label_en": "List Price (MSRP)",
+          "type": "number",
+          "ui": { "section": "line_items_grid", "control": "number", "grid_column_order": 220 },
+          "required": false,
+          "format": { "decimals": 0 }
+        },
+        {
+          "key": "adoption_type",
+          "label_ja": "採用区分",
+          "label_en": "Adoption Type",
+          "type": "string",
+          "ui": { "section": "line_items_grid", "control": "select", "grid_column_order": 230 },
+          "required": false,
+          "notes": "Header appears combined with 連絡日 in legacy UI."
+        },
+        {
+          "key": "contact_date",
+          "label_ja": "連絡日",
+          "label_en": "Contact Date",
+          "type": "date",
+          "ui": { "section": "line_items_grid", "control": "date", "grid_column_order": 240 },
+          "required": false
+        }
+      ]
+    }
+  },
+  "tables": [
+    {
+      "id": "mini_summary",
+      "label_ja": "サマリー",
+      "label_en": "Mini Summary",
+      "ui": { "section": "mini_summary_grid" },
+      "columns": [
+        { "key": "order_date", "label_ja": "受注日", "label_en": "Order Date", "type": "date" },
+        { "key": "item_name", "label_ja": "品名", "label_en": "Item Name", "type": "string" },
+        { "key": "delivery_vendor", "label_ja": "納入業者", "label_en": "Delivery Vendor", "type": "string" },
+        { "key": "delivery_qty", "label_ja": "納入数", "label_en": "Delivery Qty", "type": "number" },
+        { "key": "delivery_unit_price", "label_ja": "納入単価", "label_en": "Delivery Unit Price", "type": "number" }
+      ],
+      "notes": "This table appears above the main grid and looks like a compact summary."
+    },
+    {
+      "id": "line_items",
+      "label_ja": "明細",
+      "label_en": "Line Items",
+      "ui": { "section": "line_items_grid" },
+      "binds_to": "proposal_line",
+      "row_addition": { "supported": true, "max_rows": null },
+      "row_selection": { "supported": true, "field_key": "selected" },
+      "notes": "Spreadsheet-like editable table."
+    }
+  ],
+  "rules": [
+    {
+      "id": "budget_total_calculation",
+      "type": "calculation",
+      "target": "proposal.budget_total",
+      "expression": "SUM(proposal_line.budget_qty * proposal_line.budget_unit_price)",
+      "trigger": ["onChange:proposal_line.budget_qty", "onChange:proposal_line.budget_unit_price"],
+      "notes": "Derived from UI: 予算合計 and green budget cells."
+    },
+    {
+      "id": "mode_behavior",
+      "type": "ui_mode",
+      "target": "proposal.process_type",
+      "notes": "処理区分 changes behavior: create/edit/operations. Exact restrictions TBD."
+    }
+  ],
+  "unknowns_to_confirm": [
+    "Exact meaning and allowed values for R承認 and P承認.",
+    "Whether 削除 is a button action, a checkbox that marks for deletion, or a toggle that enables delete mode.",
+    "Whether combined headers (e.g., 見積依頼区分/依頼日) should be implemented as two separate columns or one composite column.",
+    "Validation: which fields are required, numeric precision, date format, and default values.",
+    "Line item constraints: maximum rows, paging/virtualization requirements."
+  ]
+}

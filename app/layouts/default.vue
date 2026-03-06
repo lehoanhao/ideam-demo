@@ -1,72 +1,129 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+import { useAuthStore } from '~/stores/auth'
 
 const route = useRoute()
 const toast = useToast()
+const authStore = useAuthStore()
+
+// Initialize auth session on layout mount
+onMounted(async () => {
+  if (!authStore.isAuthenticated) {
+    await authStore.fetchMe()
+  }
+})
 
 const open = ref(false)
 
 const links = [[{
-  label: 'Home',
-  icon: 'i-lucide-house',
+  label: 'ダッシュボード',
+  icon: 'i-lucide-chart-column',
   to: '/',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Inbox',
-  icon: 'i-lucide-inbox',
-  to: '/inbox',
-  badge: '4',
+  label: '提案管理',
+  icon: 'i-lucide-file-text',
+  to: '/proposals',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Customers',
+  label: '顧客管理',
   icon: 'i-lucide-users',
   to: '/customers',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Settings',
+  label: 'メーカー管理',
+  icon: 'i-lucide-building-2',
+  to: '/manufacturers',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: '仕入れ管理',
+  icon: 'i-lucide-shopping-cart',
+  to: '/procurements',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: '承認管理',
+  icon: 'i-lucide-check-circle',
+  to: '/approvals',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: '営業活動',
+  icon: 'i-lucide-activity',
+  to: '/activities',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: '日報',
+  icon: 'i-lucide-notebook-pen',
+  to: '/reports',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: '送信履歴',
+  icon: 'i-lucide-send',
+  to: '/communications',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'タグ管理',
+  icon: 'i-lucide-tags',
+  to: '/tags',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: '設定',
   to: '/settings',
   icon: 'i-lucide-settings',
   defaultOpen: true,
   type: 'trigger',
   children: [{
-    label: 'General',
+    label: '全般',
     to: '/settings',
     exact: true,
     onSelect: () => {
       open.value = false
     }
   }, {
-    label: 'Members',
+    label: 'メンバー',
     to: '/settings/members',
     onSelect: () => {
       open.value = false
     }
   }, {
-    label: 'Notifications',
+    label: '通知',
     to: '/settings/notifications',
     onSelect: () => {
       open.value = false
     }
   }, {
-    label: 'Security',
+    label: 'セキュリティ',
     to: '/settings/security',
     onSelect: () => {
       open.value = false
     }
   }]
 }], [{
-  label: 'Feedback',
+  label: 'フィードバック',
   icon: 'i-lucide-message-circle',
   to: 'https://github.com/nuxt-ui-templates/dashboard',
   target: '_blank'
 }, {
-  label: 'Help & Support',
+  label: 'ヘルプ',
   icon: 'i-lucide-info',
   to: 'https://github.com/nuxt-ui-templates/dashboard',
   target: '_blank'
@@ -74,18 +131,8 @@ const links = [[{
 
 const groups = computed(() => [{
   id: 'links',
-  label: 'Go to',
+  label: '移動先',
   items: links.flat()
-}, {
-  id: 'code',
-  label: 'Code',
-  items: [{
-    id: 'source',
-    label: 'View page source',
-    icon: 'i-simple-icons-github',
-    to: `https://github.com/nuxt-ui-templates/dashboard/blob/main/app/pages${route.path === '/' ? '/index' : route.path}.vue`,
-    target: '_blank'
-  }]
 }])
 
 onMounted(async () => {
@@ -95,18 +142,18 @@ onMounted(async () => {
   }
 
   toast.add({
-    title: 'We use first-party cookies to enhance your experience on our website.',
+    title: '当サイトでは利便性向上のためCookieを使用しています。',
     duration: 0,
     close: false,
     actions: [{
-      label: 'Accept',
+      label: '同意する',
       color: 'neutral',
       variant: 'outline',
       onClick: () => {
         cookie.value = 'accepted'
       }
     }, {
-      label: 'Opt out',
+      label: '拒否する',
       color: 'neutral',
       variant: 'ghost'
     }]

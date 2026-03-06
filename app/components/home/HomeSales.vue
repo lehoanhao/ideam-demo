@@ -49,9 +49,9 @@ const columns: TableColumn<Sale>[] = [
   },
   {
     accessorKey: 'date',
-    header: 'Date',
+    header: '日付',
     cell: ({ row }) => {
-      return new Date(row.getValue('date')).toLocaleString('en-US', {
+      return new Date(row.getValue('date')).toLocaleString('ja-JP', {
         day: 'numeric',
         month: 'short',
         hour: '2-digit',
@@ -62,32 +62,37 @@ const columns: TableColumn<Sale>[] = [
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: 'ステータス',
     cell: ({ row }) => {
+      const statusMap: Record<string, string> = {
+        paid: '支払済',
+        failed: '失敗',
+        refunded: '返金'
+      }
       const color = {
         paid: 'success' as const,
         failed: 'error' as const,
         refunded: 'neutral' as const
       }[row.getValue('status') as string]
 
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
-        row.getValue('status')
+      return h(UBadge, { variant: 'subtle', color }, () =>
+        statusMap[row.getValue('status') as string] ?? row.getValue('status')
       )
     }
   },
   {
     accessorKey: 'email',
-    header: 'Email'
+    header: 'メールアドレス'
   },
   {
     accessorKey: 'amount',
-    header: () => h('div', { class: 'text-right' }, 'Amount'),
+    header: () => h('div', { class: 'text-right' }, '金額'),
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue('amount'))
 
-      const formatted = new Intl.NumberFormat('en-US', {
+      const formatted = new Intl.NumberFormat('ja-JP', {
         style: 'currency',
-        currency: 'EUR'
+        currency: 'JPY'
       }).format(amount)
 
       return h('div', { class: 'text-right font-medium' }, formatted)

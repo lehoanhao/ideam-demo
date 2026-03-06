@@ -13,21 +13,18 @@ useHead({
     { rel: 'icon', href: '/favicon.ico' }
   ],
   htmlAttrs: {
-    lang: 'en'
+    lang: 'ja'
   }
 })
 
-const title = 'Nuxt Dashboard Template'
-const description = 'A professional dashboard template built with Nuxt UI, featuring multiple pages, data visualization, and comprehensive management capabilities for creating powerful admin interfaces.'
+const title = 'IDEAM - 提案管理システム'
+const description = 'IEDAMは提案・仕入れ管理、顧客管理、承認ワークフローを統合した法人向けシステムです。'
 
 useSeoMeta({
   title,
   description,
   ogTitle: title,
-  ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/dashboard-light.png',
-  twitterImage: 'https://ui.nuxt.com/assets/templates/nuxt/dashboard-light.png',
-  twitterCard: 'summary_large_image'
+  ogDescription: description
 })
 </script>
 

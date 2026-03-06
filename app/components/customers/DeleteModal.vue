@@ -16,21 +16,21 @@ async function onSubmit() {
 <template>
   <UModal
     v-model:open="open"
-    :title="`Delete ${count} customer${count > 1 ? 's' : ''}`"
-    :description="`Are you sure, this action cannot be undone.`"
+    :title="`${count}件の顧客を削除`"
+    description="この操作は取り消せません。本当に削除しますか？"
   >
     <slot />
 
     <template #body>
       <div class="flex justify-end gap-2">
         <UButton
-          label="Cancel"
+          label="キャンセル"
           color="neutral"
           variant="subtle"
           @click="open = false"
         />
         <UButton
-          label="Delete"
+          label="削除する"
           color="error"
           variant="solid"
           loading-auto
@@ -40,3 +40,4 @@ async function onSubmit() {
     </template>
   </UModal>
 </template>
+

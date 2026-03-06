@@ -33,10 +33,10 @@ const items = computed<DropdownMenuItem[][]>(() => {
       selectedTeam.value = team
     }
   })), [{
-    label: 'Create team',
+    label: 'チームを作成',
     icon: 'i-lucide-circle-plus'
   }, {
-    label: 'Manage teams',
+    label: 'チームを管理',
     icon: 'i-lucide-cog'
   }]]
 })

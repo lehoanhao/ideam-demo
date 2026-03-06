@@ -15,14 +15,14 @@ const filteredMembers = computed(() => {
 <template>
   <div>
     <UPageCard
-      title="Members"
-      description="Invite new members by email address."
+      title="メンバー"
+      description="メールアドレスで新規メンバーを招待します。"
       variant="naked"
       orientation="horizontal"
       class="mb-4"
     >
       <UButton
-        label="Invite people"
+        label="招待する"
         color="neutral"
         class="w-fit lg:ms-auto"
       />
@@ -33,7 +33,7 @@ const filteredMembers = computed(() => {
         <UInput
           v-model="q"
           icon="i-lucide-search"
-          placeholder="Search members"
+          placeholder="メンバーを検索..."
           autofocus
           class="w-full"
         />
