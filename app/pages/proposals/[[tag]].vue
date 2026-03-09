@@ -202,14 +202,6 @@ const columns: TableColumn<Proposal>[] = [
           placeholder="提案番号・顧客名・タイトルで検索..."
           class="w-72"
         />
-        <USelect
-          v-model="statusFilter"
-          :options="statusOptions"
-          value-key="value"
-          label-key="label"
-          placeholder="ステータス"
-          class="w-36"
-        />
       </template>
       <template #right>
         <span class="text-sm text-muted">

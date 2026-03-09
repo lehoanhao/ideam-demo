@@ -247,6 +247,17 @@ export const useProposalStore = defineStore('proposals', {
       this.formRows.push({ id: _nextRowId++, data: createEmptyRowData(), createdAt: new Date().toISOString(), updatedAt: null })
     },
 
+    addFormRowsFromProducts(products: { productCode: string, productName: string, sellingPrice: string }[]) {
+      for (const p of products) {
+        const data = createEmptyRowData()
+        data.productCode = p.productCode
+        data.productName = p.productName
+        data.sellingPrice = p.sellingPrice
+        data.packQty = '1'
+        this.formRows.push({ id: _nextRowId++, data, createdAt: new Date().toISOString(), updatedAt: null })
+      }
+    },
+
     removeFormRow(id: number) {
       if (this.formRows.length <= 1) return
       this.formRows = this.formRows.filter(r => r.id !== id)

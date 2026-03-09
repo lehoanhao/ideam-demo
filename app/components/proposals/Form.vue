@@ -1,6 +1,9 @@
 <script setup lang="ts">
 const store = useProposalStore()
 const activeRow = ref<number | null>(null)
+const productSearchOpen = ref(false)
+const manufacturerSearchOpen = ref(false)
+const manufacturerSearchRowId = ref<number | null>(null)
 
 const emit = defineEmits<{
   'pick-comment-field': [rowId: number, fieldKey: string]
@@ -11,6 +14,24 @@ function handlePickField(rowId: number, fieldKey: string) {
     store.pickField(rowId, fieldKey)
   } else if (store.pickingCommentId !== null) {
     emit('pick-comment-field', rowId, fieldKey)
+  }
+}
+
+function handleProductConfirm(products: { productCode: string, productName: string, sellingPrice: string }[]) {
+  store.addFormRowsFromProducts(products)
+}
+
+function openManufacturerSearch(rowId: number) {
+  manufacturerSearchRowId.value = rowId
+  manufacturerSearchOpen.value = true
+}
+
+function handleManufacturerConfirm(manufacturer: { name: string }) {
+  if (manufacturerSearchRowId.value !== null) {
+    const row = store.formRows.find((r: { id: number }) => r.id === manufacturerSearchRowId.value)
+    if (row) {
+      row.data.manufacturerName = manufacturer.name
+    }
   }
 }
 </script>
@@ -33,6 +54,8 @@ function handlePickField(rowId: number, fieldKey: string) {
       @delete="store.removeFormRow(row.id)"
       @duplicate="store.duplicateFormRow(row.id)"
       @pick-field="handlePickField(row.id, $event)"
+      @open-product-search="productSearchOpen = true"
+      @open-manufacturer-search="openManufacturerSearch(row.id)"
     />
     <UButton
       label="行を追加"
@@ -41,6 +64,16 @@ function handlePickField(rowId: number, fieldKey: string) {
       color="neutral"
       block
       @click="store.addFormRow()"
+    />
+
+    <ProposalsProductSearchSlideover
+      v-model:open="productSearchOpen"
+      @confirm="handleProductConfirm"
+    />
+
+    <ProposalsManufacturerSearchSlideover
+      v-model:open="manufacturerSearchOpen"
+      @confirm="handleManufacturerConfirm"
     />
   </div>
 </template>

@@ -17,6 +17,8 @@ const emit = defineEmits<{
   delete: []
   duplicate: []
   pickField: [fieldKey: string]
+  openProductSearch: []
+  openManufacturerSearch: []
 }>()
 
 const variant = computed(() => (props.active ? 'outline' : 'outline'))
@@ -113,7 +115,17 @@ function formatDateTime(iso: string) {
         :class="[isHighlighted('productCode') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
         @click="onFieldClick('productCode', $event)"
       >
-        <UInput v-model="model.productCode" :variant="variant" class="w-full" />
+        <div class="flex gap-0.5 w-full">
+          <UInput v-model="model.productCode" :variant="variant" class="flex-1" />
+          <UButton
+            icon="i-lucide-search"
+            variant="outline"
+            color="neutral"
+            size="xs"
+            class="shrink-0"
+            @click.stop="emit('openProductSearch')"
+          />
+        </div>
       </UFormField>
       <UFormField
         label="品名"
@@ -193,7 +205,17 @@ function formatDateTime(iso: string) {
         :class="[isHighlighted('manufacturerName') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
         @click="onFieldClick('manufacturerName', $event)"
       >
-        <ProposalsManufacturerSelect v-model="model.manufacturerName" :variant="variant" class="w-full" />
+        <div class="flex gap-0.5 w-full">
+          <ProposalsManufacturerSelect v-model="model.manufacturerName" :variant="variant" class="flex-1" />
+          <UButton
+            icon="i-lucide-search"
+            variant="outline"
+            color="neutral"
+            size="xs"
+            class="shrink-0"
+            @click.stop="emit('openManufacturerSearch')"
+          />
+        </div>
       </UFormField>
       <UFormField
         label="帳合先"
