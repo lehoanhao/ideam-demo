@@ -73,7 +73,7 @@ const statusToStep: Record<ProposalStatus, number> = {
   pricing: 3,
   pending_approval: 4,
   approved: 6,
-  rejected: 5,
+  rejected: 4,
   confirming: 6,
   completed: 6,
   archived: 6
@@ -302,6 +302,7 @@ const primaryButtonConfig = computed(() => {
         color: 'primary' as const
       }
     case 'pricing':
+    case 'rejected':
       return {
         label: '承認依頼',
         icon: 'i-material-symbols-order-approve',

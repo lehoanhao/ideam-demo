@@ -16,7 +16,7 @@ const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 const user = computed(() => ({
   name: authStore.user?.name || 'ゲスト',
   avatar: {
-    src: authStore.user?.avatar || undefined,
+    src: authStore.user?.avatar || 'https://i.pravatar.cc/128?u=user',
     alt: authStore.user?.name || 'ユーザー'
   }
 }))
