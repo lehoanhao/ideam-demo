@@ -17,15 +17,6 @@ watch(
     }
   }
 )
-
-// { label: 'すべて', value: '' },
-// { label: '下書き', value: 'draft' },
-// { label: '提出済み', value: 'submitted' },
-// { label: '見積済み', value: 'quoted' },
-// { label: '承認済み', value: 'approved' },
-// { label: '却下', value: 'rejected' },
-// { label: '完了', value: 'completed' },
-// { label: 'アーカイブ', value: 'archived' }
 const links = [
   {
     label: 'すべて案件',
@@ -107,19 +98,21 @@ const labels = [
 
     <template #default="{ collapsed }">
       <div
-        class="animated-border-wrapper"
-        :class="{ 'collapsed-btn': collapsed, 'ml-2': !collapsed }"
+        class="animated-border-wrapper w-full"
+        :class="{ 'collapsed-btn': collapsed, 'ml-0': !collapsed }"
       >
         <UButton
           :icon="collapsed ? 'i-lucide-plus' : 'i-simple-line-icons-plus'"
+          :trailing-icon="collapsed ? null : 'i-ep-right'"
           size="lg"
           color="neutral"
           variant="outline"
-          class="animated-border-btn rounded-full w-fit px-2 pr-4 cursor-pointer"
+          class="animated-border-btn rounded-full px-2 pr-4 cursor-pointer"
           :class="{
             'py-2': !collapsed,
             'w-7 h-7 px-0 text-center justify-center': collapsed
           }"
+          block
           @click="$router.push('/proposals/d/new')"
         >
           <span v-if="!collapsed">案件を作成</span>
@@ -169,8 +162,8 @@ const labels = [
 <style scoped>
 .animated-border-wrapper {
   position: relative;
-  width: fit-content;
   padding: 1px;
+  width: fit-content;
   border-radius: 9999px;
   background: conic-gradient(
     from var(--border-angle, 0deg),

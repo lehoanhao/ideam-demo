@@ -24,46 +24,51 @@ const validate = (state: Partial<PasswordSchema>): FormError[] => {
 </script>
 
 <template>
-  <UPageCard
-    title="パスワード変更"
-    description="新しいパスワードを設定する前に現在のパスワードを入力してください。"
-    variant="subtle"
-  >
-    <UForm
-      :schema="passwordSchema"
-      :state="password"
-      :validate="validate"
-      class="flex flex-col gap-4 max-w-xs"
-    >
-      <UFormField name="current">
-        <UInput
-          v-model="password.current"
-          type="password"
-          placeholder="現在のパスワード"
-          class="w-full"
-        />
-      </UFormField>
+  <UDashboardPanel>
+    <UDashboardNavbar title="セキュリティ" />
+    <div class="p-4 space-y-4 max-w-2xl mx-auto">
+      <UPageCard
+        title="パスワード変更"
+        description="新しいパスワードを設定する前に現在のパスワードを入力してください。"
+        variant="subtle"
+      >
+        <UForm
+          :schema="passwordSchema"
+          :state="password"
+          :validate="validate"
+          class="flex flex-col gap-4 max-w-xs"
+        >
+          <UFormField name="current">
+            <UInput
+              v-model="password.current"
+              type="password"
+              placeholder="現在のパスワード"
+              class="w-full"
+            />
+          </UFormField>
 
-      <UFormField name="new">
-        <UInput
-          v-model="password.new"
-          type="password"
-          placeholder="新しいパスワード"
-          class="w-full"
-        />
-      </UFormField>
+          <UFormField name="new">
+            <UInput
+              v-model="password.new"
+              type="password"
+              placeholder="新しいパスワード"
+              class="w-full"
+            />
+          </UFormField>
 
-      <UButton label="更新する" class="w-fit" type="submit" />
-    </UForm>
-  </UPageCard>
+          <UButton label="更新する" class="w-fit" type="submit" />
+        </UForm>
+      </UPageCard>
 
-  <UPageCard
-    title="アカウント"
-    description="サービスを停止する場合はここからアカウントを削除できます。この操作は元に戻せません。すべてのデータが永久に削除されます。"
-    class="bg-gradient-to-tl from-error/10 from-5% to-default"
-  >
-    <template #footer>
-      <UButton label="アカウントを削除" color="error" />
-    </template>
-  </UPageCard>
+      <UPageCard
+        title="アカウント"
+        description="サービスを停止する場合はここからアカウントを削除できます。この操作は元に戻せません。すべてのデータが永久に削除されます。"
+        class="bg-gradient-to-tl from-error/10 from-5% to-default"
+      >
+        <template #footer>
+          <UButton label="アカウントを削除" color="error" />
+        </template>
+      </UPageCard>
+    </div>
+  </UDashboardPanel>
 </template>

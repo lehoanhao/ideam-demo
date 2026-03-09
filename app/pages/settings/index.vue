@@ -1,158 +1,261 @@
 <script setup lang="ts">
-import * as z from 'zod'
-import type { FormSubmitEvent } from '@nuxt/ui'
+import { h, resolveComponent } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
+import type { Tag, TagCategory } from '~/types'
+import { useTagsStore } from '~/stores/tags'
 
-const fileRef = ref<HTMLInputElement>()
-
-const profileSchema = z.object({
-  name: z.string().min(2, '2文字以上入力してください'),
-  email: z.string().email('有効なメールアドレスを入力してください'),
-  username: z.string().min(2, '2文字以上入力してください'),
-  avatar: z.string().optional(),
-  bio: z.string().optional()
-})
-
-type ProfileSchema = z.output<typeof profileSchema>
-
-const profile = reactive<Partial<ProfileSchema>>({
-  name: 'Benjamin Canac',
-  email: 'ben@nuxtlabs.com',
-  username: 'benjamincanac',
-  avatar: undefined,
-  bio: undefined
-})
+const store = useTagsStore()
 const toast = useToast()
-async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
-  toast.add({
-    title: '保存しました',
-    description: '設定を更新しました。',
-    icon: 'i-lucide-check',
-    color: 'success'
-  })
-  console.log(event.data)
+
+const categoryFilter = ref<TagCategory | ''>('')
+const searchQuery = ref('')
+const showAddModal = ref(false)
+
+const newTag = reactive({
+  name: '',
+  category: 'customer' as TagCategory,
+  color: 'neutral'
+})
+
+const editingTag = ref<Tag | null>(null)
+const showEditModal = ref(false)
+
+onMounted(() => store.fetchTags())
+
+const categoryLabelMap: Record<TagCategory, string> = {
+  customer: '顧客',
+  manufacturer: 'メーカー',
+  proposal: '提案',
+  procurement: '仕入れ',
+  activity: '営業活動'
+}
+const categoryColorMap: Record<TagCategory, string> = {
+  customer: 'primary',
+  manufacturer: 'info',
+  proposal: 'success',
+  procurement: 'warning',
+  activity: 'neutral'
 }
 
-function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement
+const categoryOptions = [
+  { label: 'すべて', value: '' },
+  { label: '顧客', value: 'customer' },
+  { label: 'メーカー', value: 'manufacturer' },
+  { label: '提案', value: 'proposal' },
+  { label: '仕入れ', value: 'procurement' },
+  { label: '営業活動', value: 'activity' }
+]
+const colorOptions = [
+  { label: 'デフォルト', value: 'neutral' },
+  { label: 'プライマリ', value: 'primary' },
+  { label: '成功', value: 'success' },
+  { label: '警告', value: 'warning' },
+  { label: 'エラー', value: 'error' },
+  { label: '情報', value: 'info' }
+]
 
-  if (!input.files?.length) {
-    return
+const filteredTags = computed(() => {
+  let result: Tag[] = store.tags
+  if (categoryFilter.value) {
+    result = result.filter((t: Tag) => t.category === categoryFilter.value)
   }
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
+    result = result.filter((t: Tag) => t.name.toLowerCase().includes(q))
+  }
+  return result
+})
 
-  profile.avatar = URL.createObjectURL(input.files[0]!)
+const UBadge = resolveComponent('UBadge')
+const UButton = resolveComponent('UButton')
+
+const columns: TableColumn<Tag>[] = [
+  {
+    accessorKey: 'name',
+    header: 'タグ名',
+    cell: ({ row }) => h(UBadge, {
+      color: (row.original.color || 'neutral') as any,
+      variant: 'subtle'
+    }, () => row.original.name)
+  },
+  {
+    accessorKey: 'category',
+    header: 'カテゴリ',
+    cell: ({ row }) => h(UBadge, {
+      color: categoryColorMap[row.original.category] as any,
+      variant: 'outline',
+      size: 'sm'
+    }, () => categoryLabelMap[row.original.category])
+  },
+  {
+    accessorKey: 'usageCount',
+    header: '使用数',
+    cell: ({ row }) => h('span', { class: 'tabular-nums' }, row.original.usageCount)
+  },
+  {
+    accessorKey: 'updatedAt',
+    header: '更新日',
+    cell: ({ row }) => new Date(row.original.updatedAt).toLocaleDateString('ja-JP')
+  },
+  {
+    id: 'actions',
+    header: '',
+    cell: ({ row }) => h('div', { class: 'flex items-center gap-1' }, [
+      h(UButton, {
+        icon: 'i-lucide-pencil',
+        color: 'neutral',
+        variant: 'ghost',
+        size: 'sm',
+        onClick: () => {
+          editingTag.value = { ...row.original }
+          showEditModal.value = true
+        }
+      }),
+      h(UButton, {
+        icon: 'i-lucide-trash',
+        color: 'error',
+        variant: 'ghost',
+        size: 'sm',
+        onClick: async () => {
+          const ok = await store.deleteTag(row.original.id)
+          if (ok) toast.add({ title: 'タグを削除しました', color: 'success' })
+        }
+      })
+    ])
+  }
+]
+
+async function handleCreate() {
+  if (!newTag.name.trim()) return
+  const result = await store.createTag(newTag)
+  if (result) {
+    toast.add({ title: 'タグを作成しました', color: 'success' })
+    showAddModal.value = false
+    newTag.name = ''
+    newTag.category = 'customer'
+    newTag.color = 'neutral'
+  }
 }
 
-function onFileClick() {
-  fileRef.value?.click()
+async function handleUpdate() {
+  if (!editingTag.value || !editingTag.value.name.trim()) return
+  const result = await store.updateTag(editingTag.value.id, editingTag.value)
+  if (result) {
+    toast.add({ title: 'タグを更新しました', color: 'success' })
+    showEditModal.value = false
+    editingTag.value = null
+    store.fetchTags()
+  }
 }
 </script>
 
 <template>
-  <UForm
-    id="settings"
-    :schema="profileSchema"
-    :state="profile"
-    @submit="onSubmit"
-  >
-    <UPageCard
-      title="プロフィール"
-      description="公開プロフィール情報を設定します。"
-      variant="naked"
-      orientation="horizontal"
-      class="mb-4"
-    >
-      <UButton
-        form="settings"
-        label="変更を保存"
-        color="neutral"
-        type="submit"
-        class="w-fit lg:ms-auto"
-      />
-    </UPageCard>
+  <UDashboardPanel>
+    <UDashboardNavbar title="タグ管理">
+      <template #right>
+        <UButton
+          label="新規タグ"
+          icon="i-lucide-plus"
+          color="primary"
+          @click="showAddModal = true"
+        />
+      </template>
+    </UDashboardNavbar>
 
-    <UPageCard variant="subtle">
-      <UFormField
-        name="name"
-        label="氏名"
-        description="領収書や請求書などに表示されます。"
-        required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
+    <UDashboardToolbar>
+      <template #left>
         <UInput
-          v-model="profile.name"
-          autocomplete="off"
+          v-model="searchQuery"
+          icon="i-lucide-search"
+          placeholder="タグ名で検索..."
+          class="w-48"
         />
-      </UFormField>
-      <USeparator />
-      <UFormField
-        name="email"
-        label="メールアドレス"
-        description="ログインやメール受信に使用します。"
-        required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <UInput
-          v-model="profile.email"
-          type="email"
-          autocomplete="off"
+        <USelectMenu
+          v-model="categoryFilter"
+          :items="categoryOptions"
+          value-key="value"
+          class="w-40"
+          placeholder="カテゴリ"
         />
-      </UFormField>
-      <USeparator />
-      <UFormField
-        name="username"
-        label="ユーザー名"
-        description="ログインIDおよびプロフィールURLに使用します。"
-        required
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <UInput
-          v-model="profile.username"
-          type="username"
-          autocomplete="off"
-        />
-      </UFormField>
-      <USeparator />
-      <UFormField
-        name="avatar"
-        label="アバター"
-        description="JPG、GIF、PNG。最大1MB。"
-        class="flex max-sm:flex-col justify-between sm:items-center gap-4"
-      >
-        <div class="flex flex-wrap items-center gap-3">
-          <UAvatar
-            :src="profile.avatar"
-            :alt="profile.name"
-            size="lg"
-          />
-          <UButton
-            label="選択"
-            color="neutral"
-            @click="onFileClick"
-          />
-          <input
-            ref="fileRef"
-            type="file"
-            class="hidden"
-            accept=".jpg, .jpeg, .png, .gif"
-            @change="onFileChange"
-          >
+      </template>
+      <template #right>
+        <span class="text-sm text-muted">{{ filteredTags.length }}件</span>
+      </template>
+    </UDashboardToolbar>
+
+    <UTable
+      :data="filteredTags"
+      :columns="columns"
+      :loading="store.loading"
+      class="flex-1"
+    />
+
+    <!-- Add Modal -->
+    <UModal v-model:open="showAddModal">
+      <template #content>
+        <div class="p-6 space-y-4">
+          <h3 class="text-lg font-semibold">
+            新規タグ作成
+          </h3>
+          <UFormField label="タグ名">
+            <UInput v-model="newTag.name" placeholder="タグ名を入力" />
+          </UFormField>
+          <UFormField label="カテゴリ">
+            <USelectMenu v-model="newTag.category" :items="categoryOptions.slice(1)" value-key="value" />
+          </UFormField>
+          <UFormField label="カラー">
+            <USelectMenu v-model="newTag.color" :items="colorOptions" value-key="value" />
+          </UFormField>
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="キャンセル"
+              variant="ghost"
+              color="neutral"
+              @click="showAddModal = false"
+            />
+            <UButton
+              label="作成"
+              color="primary"
+              :disabled="!newTag.name.trim()"
+              @click="handleCreate"
+            />
+          </div>
         </div>
-      </UFormField>
-      <USeparator />
-      <UFormField
-        name="bio"
-        label="自己紹介"
-        description="プロフィールの簡単な説明。URLはリンクになります。"
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-        :ui="{ container: 'w-full' }"
-      >
-        <UTextarea
-          v-model="profile.bio"
-          :rows="5"
-          autoresize
-          class="w-full"
-        />
-      </UFormField>
-    </UPageCard>
-  </UForm>
+      </template>
+    </UModal>
+
+    <!-- Edit Modal -->
+    <UModal v-model:open="showEditModal">
+      <template #content>
+        <div v-if="editingTag" class="p-6 space-y-4">
+          <h3 class="text-lg font-semibold">
+            タグ編集
+          </h3>
+          <UFormField label="タグ名">
+            <UInput v-model="editingTag.name" placeholder="タグ名を入力" />
+          </UFormField>
+          <UFormField label="カテゴリ">
+            <USelectMenu v-model="editingTag.category" :items="categoryOptions.slice(1)" value-key="value" />
+          </UFormField>
+          <UFormField label="カラー">
+            <USelectMenu v-model="editingTag.color" :items="colorOptions" value-key="value" />
+          </UFormField>
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="キャンセル"
+              variant="ghost"
+              color="neutral"
+              @click="showEditModal = false"
+            />
+            <UButton
+              label="更新"
+              color="primary"
+              :disabled="!editingTag?.name?.trim()"
+              @click="handleUpdate"
+            />
+          </div>
+        </div>
+      </template>
+    </UModal>
+  </UDashboardPanel>
 </template>

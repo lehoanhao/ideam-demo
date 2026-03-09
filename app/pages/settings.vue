@@ -1,50 +1,48 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
+definePageMeta({ layout: 'default' })
 
-const links = [[{
-  label: 'General',
-  icon: 'i-lucide-user',
-  to: '/settings',
-  exact: true
-}, {
-  label: 'Members',
-  icon: 'i-lucide-users',
-  to: '/settings/members'
-}, {
-  label: 'Notifications',
-  icon: 'i-lucide-bell',
-  to: '/settings/notifications'
-}, {
-  label: 'Security',
-  icon: 'i-lucide-shield',
-  to: '/settings/security'
-}], [{
-  label: 'Documentation',
-  icon: 'i-lucide-book-open',
-  to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-  target: '_blank'
-}]] satisfies NavigationMenuItem[][]
+const route = useRoute()
+
+const navItems = computed(() => [
+  {
+    label: 'タグ管理',
+    icon: 'i-lucide-tags',
+    to: '/settings',
+    active: route.path === '/settings' || route.path === '/settings/tags'
+  },
+  {
+    label: 'アカウント管理',
+    icon: 'i-lucide-users',
+    to: '/settings/accounts',
+    active: route.path === '/settings/accounts'
+  },
+  {
+    label: '通知設定',
+    icon: 'i-lucide-bell',
+    to: '/settings/notifications',
+    active: route.path === '/settings/notifications'
+  },
+  {
+    label: 'セキュリティ',
+    icon: 'i-lucide-shield',
+    to: '/settings/security',
+    active: route.path === '/settings/security'
+  }
+])
 </script>
 
 <template>
-  <UDashboardPanel id="settings" :ui="{ body: 'lg:py-12' }">
-    <template #header>
-      <UDashboardNavbar title="Settings">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-      </UDashboardNavbar>
+  <UDashboardSidebar
+    id="settings-sidebar"
+    collapsible
+    resizable
+    :min-size="15"
+    :default-size="20"
+    :max-size="30"
+    class="bg-elevated/60"
+  >
+    <UNavigationMenu :items="navItems" />
+  </UDashboardSidebar>
 
-      <UDashboardToolbar>
-        <!-- NOTE: The `-mx-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
-        <UNavigationMenu :items="links" highlight class="-mx-1 flex-1" />
-      </UDashboardToolbar>
-    </template>
-
-    <template #body>
-      <div class="flex flex-col gap-4 sm:gap-6 lg:gap-12 w-full lg:max-w-2xl mx-auto">
-        <NuxtPage />
-      </div>
-    </template>
-  </UDashboardPanel>
+  <NuxtPage />
 </template>

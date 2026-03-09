@@ -14,16 +14,20 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  routeRules: {
-    '/api/**': {
-      cors: true
-    }
-  },
-
   router: {
     options: {
       scrollBehaviorType: 'smooth'
     }
+  },
+
+  routeRules: {
+    '/api/**': {
+      cors: true
+    },
+    '/': {
+      redirect: '/proposals'
+    }
+
   },
 
   compatibilityDate: '2024-07-11',

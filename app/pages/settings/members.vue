@@ -13,33 +13,36 @@ const filteredMembers = computed(() => {
 </script>
 
 <template>
-  <div>
-    <UPageCard
-      title="メンバー"
-      description="メールアドレスで新規メンバーを招待します。"
-      variant="naked"
-      orientation="horizontal"
-      class="mb-4"
-    >
-      <UButton
-        label="招待する"
-        color="neutral"
-        class="w-fit lg:ms-auto"
-      />
-    </UPageCard>
-
-    <UPageCard variant="subtle" :ui="{ container: 'p-0 sm:p-0 gap-y-0', wrapper: 'items-stretch', header: 'p-4 mb-0 border-b border-default' }">
-      <template #header>
-        <UInput
-          v-model="q"
-          icon="i-lucide-search"
-          placeholder="メンバーを検索..."
-          autofocus
-          class="w-full"
+  <UDashboardPanel>
+    <UDashboardNavbar title="メンバー管理" />
+    <div class="p-4 space-y-4 max-w-2xl mx-auto">
+      <UPageCard
+        title="メンバー"
+        description="メールアドレスで新規メンバーを招待します。"
+        variant="naked"
+        orientation="horizontal"
+        class="mb-4"
+      >
+        <UButton
+          label="招待する"
+          color="neutral"
+          class="w-fit lg:ms-auto"
         />
-      </template>
+      </UPageCard>
 
-      <SettingsMembersList :members="filteredMembers" />
-    </UPageCard>
-  </div>
+      <UPageCard variant="subtle" :ui="{ container: 'p-0 sm:p-0 gap-y-0', wrapper: 'items-stretch', header: 'p-4 mb-0 border-b border-default' }">
+        <template #header>
+          <UInput
+            v-model="q"
+            icon="i-lucide-search"
+            placeholder="メンバーを検索..."
+            autofocus
+            class="w-full"
+          />
+        </template>
+
+        <SettingsMembersList :members="filteredMembers" />
+      </UPageCard>
+    </div>
+  </UDashboardPanel>
 </template>

@@ -44,28 +44,33 @@ async function onChange() {
 </script>
 
 <template>
-  <div v-for="(section, index) in sections" :key="index">
-    <UPageCard
-      :title="section.title"
-      :description="section.description"
-      variant="naked"
-      class="mb-4"
-    />
-
-    <UPageCard variant="subtle" :ui="{ container: 'divide-y divide-default' }">
-      <UFormField
-        v-for="field in section.fields"
-        :key="field.name"
-        :name="field.name"
-        :label="field.label"
-        :description="field.description"
-        class="flex items-center justify-between not-last:pb-4 gap-2"
-      >
-        <USwitch
-          v-model="state[field.name]"
-          @update:model-value="onChange"
+  <UDashboardPanel>
+    <UDashboardNavbar title="通知設定" />
+    <div class="p-4 space-y-4 max-w-2xl mx-auto">
+      <div v-for="(section, index) in sections" :key="index">
+        <UPageCard
+          :title="section.title"
+          :description="section.description"
+          variant="naked"
+          class="mb-4"
         />
-      </UFormField>
-    </UPageCard>
-  </div>
+
+        <UPageCard variant="subtle" :ui="{ container: 'divide-y divide-default' }">
+          <UFormField
+            v-for="field in section.fields"
+            :key="field.name"
+            :name="field.name"
+            :label="field.label"
+            :description="field.description"
+            class="flex items-center justify-between not-last:pb-4 gap-2"
+          >
+            <USwitch
+              v-model="state[field.name]"
+              @update:model-value="onChange"
+            />
+          </UFormField>
+        </UPageCard>
+      </div>
+    </div>
+  </UDashboardPanel>
 </template>

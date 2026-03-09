@@ -11,8 +11,42 @@ const UCheckbox = resolveComponent('UCheckbox')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
 const proposalStore = useProposalStore()
+
+const tagToStatuses: Record<string, ProposalStatus[]> = {
+  'purchase-requests': ['submitted'],
+  'submitted': ['quoted'],
+  'quoted': ['pricing'],
+  'approved': ['approved', 'pending_approval'],
+  'rejected': ['rejected'],
+  'completed': ['completed', 'confirming'],
+  'drafts': ['draft'],
+  'archived': ['archived']
+}
+
+const tagLabelMap: Record<string, string> = {
+  'purchase-requests': '仕入れ依頼',
+  'submitted': 'メーカー依頼済',
+  'quoted': '仕入れ値段決定',
+  'approved': '承認済み',
+  'rejected': '却下',
+  'completed': '完了',
+  'drafts': '下書き',
+  'archived': 'アーカイブ'
+}
+
+const currentTag = computed(() => {
+  const t = route.params.tag
+  const val = Array.isArray(t) ? t.join('/') : (t || '')
+  return val
+})
+
+const pageTitle = computed(() => {
+  if (!currentTag.value) return '提案管理'
+  return tagLabelMap[currentTag.value] || '提案管理'
+})
 
 const pagination = ref({ pageIndex: 0, pageSize: 20 })
 const columnFilters = ref([{ id: 'title', value: '' }])
@@ -62,20 +96,24 @@ const statusLabelMap: Record<ProposalStatus, string> = {
 }
 
 const searchQuery = ref('')
-const statusFilter = ref('')
+
+const activeStatuses = computed(() => {
+  if (!currentTag.value) return []
+  return tagToStatuses[currentTag.value] || []
+})
 
 const filteredProposals = computed(() => {
-  let list = proposalStore.proposals
+  let list: Proposal[] = proposalStore.proposals
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
-    list = list.filter(p =>
+    list = list.filter((p: Proposal) =>
       p.title.toLowerCase().includes(q)
       || p.code.toLowerCase().includes(q)
       || p.customerName.toLowerCase().includes(q)
     )
   }
-  if (statusFilter.value) {
-    list = list.filter(p => p.status === statusFilter.value)
+  if (activeStatuses.value.length > 0) {
+    list = list.filter((p: Proposal) => activeStatuses.value.includes(p.status as ProposalStatus))
   }
   return list
 })
@@ -183,7 +221,7 @@ const columns: TableColumn<Proposal>[] = [
 <template>
   <UDashboardPanel>
     <template #header>
-      <UDashboardNavbar title="提案管理">
+      <UDashboardNavbar :title="pageTitle">
         <template #right>
           <UButton
             icon="i-lucide-plus"
