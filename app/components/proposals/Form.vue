@@ -2,6 +2,7 @@
 const store = useProposalStore()
 const activeRow = ref<number | null>(null)
 const productSearchOpen = ref(false)
+const productSearchRowId = ref<number | null>(null)
 const manufacturerSearchOpen = ref(false)
 const manufacturerSearchRowId = ref<number | null>(null)
 
@@ -18,7 +19,24 @@ function handlePickField(rowId: number, fieldKey: string) {
 }
 
 function handleProductConfirm(products: { productCode: string, productName: string, sellingPrice: string }[]) {
-  store.addFormRowsFromProducts(products)
+  if (productSearchRowId.value !== null && products.length > 0) {
+    const row = store.formRows.find((r: { id: number }) => r.id === productSearchRowId.value)
+    const first = products[0]
+    if (row && first) {
+      row.data.productCode = first.productCode
+      row.data.productName = first.productName
+      row.data.sellingPrice = first.sellingPrice
+      row.data.packQty = '1'
+    }
+    if (products.length > 1) {
+      store.addFormRowsFromProducts(products.slice(1))
+    }
+  }
+}
+
+function openProductSearch(rowId: number) {
+  productSearchRowId.value = rowId
+  productSearchOpen.value = true
 }
 
 function openManufacturerSearch(rowId: number) {
@@ -54,7 +72,7 @@ function handleManufacturerConfirm(manufacturer: { name: string }) {
       @delete="store.removeFormRow(row.id)"
       @duplicate="store.duplicateFormRow(row.id)"
       @pick-field="handlePickField(row.id, $event)"
-      @open-product-search="productSearchOpen = true"
+      @open-product-search="openProductSearch(row.id)"
       @open-manufacturer-search="openManufacturerSearch(row.id)"
     />
     <UButton
@@ -73,6 +91,7 @@ function handleManufacturerConfirm(manufacturer: { name: string }) {
 
     <ProposalsManufacturerSearchSlideover
       v-model:open="manufacturerSearchOpen"
+      :product-code="manufacturerSearchRowId !== null ? store.formRows.find(r => r.id === manufacturerSearchRowId)?.data.productCode : undefined"
       @confirm="handleManufacturerConfirm"
     />
   </div>

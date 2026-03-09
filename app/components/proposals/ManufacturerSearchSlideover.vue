@@ -12,7 +12,7 @@ const emit = defineEmits<{
   confirm: [manufacturer: ManufacturerItem]
 }>()
 
-defineProps<{
+const props = defineProps<{
   productCode?: string
 }>()
 
@@ -83,6 +83,12 @@ function handleClose() {
   selectedId.value = null
   open.value = false
 }
+
+watch(open, (isOpen) => {
+  if (isOpen) {
+    searchForm.productCode = props.productCode || ''
+  }
+})
 </script>
 
 <template>
@@ -90,7 +96,7 @@ function handleClose() {
     v-model:open="open"
     title="メーカー検索"
     :overlay="false"
-    :ui="{ width: 'sm:max-w-xl' }"
+    :ui="{ width: 'sm:max-w-xl', body: '!px-2 !pb-2' }"
   >
     <template #body>
       <div class="flex flex-col gap-4 h-full">
@@ -181,7 +187,7 @@ function handleClose() {
     </template>
 
     <template #footer>
-      <div class="flex gap-2 justify-end">
+      <div class="flex gap-2 justify-end w-full">
         <UButton
           label="閉じる"
           variant="outline"

@@ -168,6 +168,28 @@ const selectedManufacturerNames = computed(() => {
     .filter(Boolean)
 })
 
+// --- Approval confirm modal (slide to approve) ---
+const showApprovalConfirmModal = ref(false)
+
+async function handleSlideApproved() {
+  try {
+    if (proposalId.value) {
+      await proposalStore.updateProposal(proposalId.value, {
+        status: 'approved',
+        approvalStatus: 'approved',
+        approvedBy: 'user_001',
+        approvalDate: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+    }
+    toast.add({ title: '承認しました', color: 'success' })
+    showApprovalConfirmModal.value = false
+    navigateTo('/proposals')
+  } catch {
+    toast.add({ title: '承認に失敗しました', color: 'error' })
+  }
+}
+
 // --- Approval request modal ---
 const showApprovalModal = ref(false)
 
@@ -408,23 +430,7 @@ function handlePrimaryClick() {
       showApprovalModal.value = true
       break
     case 'pending_approval':
-      openConfirm('承認の確認', 'この提案を承認しますか？', async () => {
-        try {
-          if (proposalId.value) {
-            await proposalStore.updateProposal(proposalId.value, {
-              status: 'approved',
-              approvalStatus: 'approved',
-              approvedBy: 'user_001',
-              approvalDate: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            })
-          }
-          toast.add({ title: '承認しました', color: 'success' })
-          navigateTo('/proposals')
-        } catch {
-          toast.add({ title: '承認に失敗しました', color: 'error' })
-        }
-      })
+      showApprovalConfirmModal.value = true
       break
     case 'confirming':
       openConfirm('完了の確認', 'この提案を完了にしますか？', async () => {
@@ -992,6 +998,12 @@ function formatFieldLabel(field: CommentField) {
     <ProposalsManufacturerRequestModal
       v-model:open="showManufacturerModal"
       :manufacturer-names="selectedManufacturerNames"
+    />
+
+    <!-- Approval confirm modal (slide to approve) -->
+    <ProposalsApprovalConfirmModal
+      v-model:open="showApprovalConfirmModal"
+      @approved="handleSlideApproved"
     />
 
     <!-- Approval request modal -->

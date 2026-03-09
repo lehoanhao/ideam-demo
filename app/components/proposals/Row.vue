@@ -205,17 +205,16 @@ function formatDateTime(iso: string) {
         :class="[isHighlighted('manufacturerName') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
         @click="onFieldClick('manufacturerName', $event)"
       >
-        <div class="flex gap-0.5 w-full">
-          <ProposalsManufacturerSelect v-model="model.manufacturerName" :variant="variant" class="flex-1" />
-          <UButton
-            icon="i-lucide-search"
-            variant="outline"
-            color="neutral"
-            size="xs"
-            class="shrink-0"
-            @click.stop="emit('openManufacturerSearch')"
-          />
-        </div>
+        <!-- <ProposalsManufacturerSelect v-model="model.manufacturerName" :variant="variant" /> -->
+        <UButton
+          trailing-icon="i-lucide-search"
+          variant="outline"
+          color="neutral"
+          size="xs"
+          class="w-full"
+          :label="model.manufacturerName || '未指定'"
+          @click.stop="emit('openManufacturerSearch')"
+        />
       </UFormField>
       <UFormField
         label="帳合先"
