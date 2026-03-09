@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import type { Customer, CustomerFilter } from '~/types'
+import { mockCustomers } from '~/utils/mock-data'
+
+let _allCustomers = [...mockCustomers]
 
 interface CustomerState {
   customers: Customer[]
@@ -26,12 +29,12 @@ export const useCustomerStore = defineStore('customers', {
 
   getters: {
     filteredCustomers: (state) => {
-      return state.customers.filter(customer => {
+      return state.customers.filter((customer) => {
         if (state.filters.search) {
           const query = state.filters.search.toLowerCase()
           return (
-            customer.name.toLowerCase().includes(query) ||
-            customer.code.toLowerCase().includes(query)
+            customer.name.toLowerCase().includes(query)
+            || customer.code.toLowerCase().includes(query)
           )
         }
         return true
@@ -54,16 +57,15 @@ export const useCustomerStore = defineStore('customers', {
       this.loading = true
       this.error = null
       try {
-        const { data, total } = await $fetch('/api/customers', {
-          method: 'GET',
-          query: filters || this.filters
-        })
+        const f = filters || this.filters
+        let data = [..._allCustomers]
+        if (f.search) {
+          const q = f.search.toLowerCase()
+          data = data.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q))
+        }
         this.customers = data
-        this.totalCount = total
-        this.filters = filters || this.filters
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'Failed to fetch customers'
-        console.error('Error fetching customers:', err)
+        this.totalCount = data.length
+        this.filters = f
       } finally {
         this.loading = false
       }
@@ -73,12 +75,9 @@ export const useCustomerStore = defineStore('customers', {
       this.loading = true
       this.error = null
       try {
-        const data = await $fetch(`/api/customers/${id}`)
+        const data = _allCustomers.find(c => c.id === id) || null
         this.selectedCustomer = data
         return data
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'Failed to fetch customer'
-        console.error('Error fetching customer:', err)
       } finally {
         this.loading = false
       }
@@ -88,17 +87,17 @@ export const useCustomerStore = defineStore('customers', {
       this.loading = true
       this.error = null
       try {
-        const newCustomer = await $fetch('/api/customers', {
-          method: 'POST',
-          body: customerData
-        })
+        const now = new Date().toISOString()
+        const newCustomer: Customer = {
+          ...customerData,
+          id: `cust_${String(_allCustomers.length + 1).padStart(3, '0')}`,
+          createdAt: now,
+          updatedAt: now
+        }
+        _allCustomers.push(newCustomer)
         this.customers.push(newCustomer)
         this.totalCount++
         return newCustomer
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'Failed to create customer'
-        console.error('Error creating customer:', err)
-        throw err
       } finally {
         this.loading = false
       }
@@ -108,22 +107,14 @@ export const useCustomerStore = defineStore('customers', {
       this.loading = true
       this.error = null
       try {
-        const updatedCustomer = await $fetch(`/api/customers/${id}`, {
-          method: 'PUT',
-          body: customerData
-        })
-        const index = this.customers.findIndex(c => c.id === id)
-        if (index !== -1) {
-          this.customers[index] = updatedCustomer
-        }
-        if (this.selectedCustomer?.id === id) {
-          this.selectedCustomer = updatedCustomer
-        }
+        const idx = _allCustomers.findIndex(c => c.id === id)
+        if (idx === -1) throw new Error('Customer not found')
+        const updatedCustomer = { ..._allCustomers[idx], ...customerData, updatedAt: new Date().toISOString() }
+        _allCustomers[idx] = updatedCustomer
+        const storeIdx = this.customers.findIndex(c => c.id === id)
+        if (storeIdx !== -1) this.customers[storeIdx] = updatedCustomer
+        if (this.selectedCustomer?.id === id) this.selectedCustomer = updatedCustomer
         return updatedCustomer
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'Failed to update customer'
-        console.error('Error updating customer:', err)
-        throw err
       } finally {
         this.loading = false
       }
@@ -133,18 +124,10 @@ export const useCustomerStore = defineStore('customers', {
       this.loading = true
       this.error = null
       try {
-        await $fetch(`/api/customers/${id}`, {
-          method: 'DELETE'
-        })
+        _allCustomers = _allCustomers.filter(c => c.id !== id)
         this.customers = this.customers.filter(c => c.id !== id)
         this.totalCount--
-        if (this.selectedCustomer?.id === id) {
-          this.selectedCustomer = null
-        }
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'Failed to delete customer'
-        console.error('Error deleting customer:', err)
-        throw err
+        if (this.selectedCustomer?.id === id) this.selectedCustomer = null
       } finally {
         this.loading = false
       }
@@ -154,14 +137,12 @@ export const useCustomerStore = defineStore('customers', {
       this.loading = true
       this.error = null
       try {
-        const results = await $fetch('/api/customers/search', {
-          method: 'POST',
-          body: { query }
-        })
-        return results
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'Failed to search customers'
-        console.error('Error searching customers:', err)
+        const q = query.toLowerCase()
+        return _allCustomers.filter(c =>
+          c.name.toLowerCase().includes(q)
+          || c.code.toLowerCase().includes(q)
+          || c.furigana?.toLowerCase().includes(q)
+        )
       } finally {
         this.loading = false
       }

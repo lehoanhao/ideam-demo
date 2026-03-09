@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DailyReport, SalesActivityType } from '~/types'
+import { generateDailyReport } from '~/utils/mock-data'
 
 const reportDate = ref(new Date().toISOString().slice(0, 10))
 const groupBy = ref<'salesperson' | 'customer'>('salesperson')
@@ -29,11 +30,7 @@ const typeIconMap: Record<SalesActivityType, string> = {
 async function fetchReport() {
   loading.value = true
   try {
-    report.value = await $fetch<DailyReport>('/api/reports/daily', {
-      params: { date: reportDate.value, groupBy: groupBy.value }
-    })
-  } catch {
-    report.value = null
+    report.value = generateDailyReport(reportDate.value, groupBy.value)
   } finally {
     loading.value = false
   }
@@ -57,14 +54,25 @@ function handlePrint() {
   <UDashboardPanel>
     <UDashboardNavbar title="日報">
       <template #right>
-        <UButton label="印刷" icon="i-lucide-printer" variant="outline" color="neutral" @click="handlePrint" />
+        <UButton
+          label="印刷"
+          icon="i-lucide-printer"
+          variant="outline"
+          color="neutral"
+          @click="handlePrint"
+        />
       </template>
     </UDashboardNavbar>
 
     <UDashboardToolbar>
       <template #left>
         <UInput v-model="reportDate" type="date" class="w-44" />
-        <USelectMenu v-model="groupBy" :items="groupByOptions" value-key="value" class="w-40" />
+        <USelectMenu
+          v-model="groupBy"
+          :items="groupByOptions"
+          value-key="value"
+          class="w-40"
+        />
       </template>
       <template #right>
         <span class="text-sm text-muted">合計 {{ totalEntries }}件</span>
@@ -80,8 +88,12 @@ function handlePrint() {
         <div v-for="group in report.groups" :key="group.key" class="mb-6">
           <div class="flex items-center gap-2 mb-3 pb-2 border-b border-default">
             <UIcon :name="groupBy === 'salesperson' ? 'i-lucide-user' : 'i-lucide-building'" class="text-muted" />
-            <h3 class="font-semibold text-base">{{ group.label }}</h3>
-            <UBadge variant="subtle" color="neutral" size="sm">{{ group.entries.length }}件</UBadge>
+            <h3 class="font-semibold text-base">
+              {{ group.label }}
+            </h3>
+            <UBadge variant="subtle" color="neutral" size="sm">
+              {{ group.entries.length }}件
+            </UBadge>
           </div>
 
           <div class="space-y-3">
@@ -94,13 +106,17 @@ function handlePrint() {
                   <NuxtLink :to="`/activities/${entry.activityId}`" class="text-sm font-medium text-primary hover:underline">
                     {{ entry.title }}
                   </NuxtLink>
-                  <UBadge variant="outline" size="xs" color="neutral">{{ typeLabelMap[entry.type] }}</UBadge>
+                  <UBadge variant="outline" size="xs" color="neutral">
+                    {{ typeLabelMap[entry.type] }}
+                  </UBadge>
                 </div>
                 <div class="text-xs text-muted mt-1">
                   <span v-if="groupBy === 'salesperson'">顧客: {{ entry.customerName }}</span>
                   <span v-else>担当: {{ entry.assignedToName }}</span>
                 </div>
-                <p v-if="entry.description" class="text-sm text-muted mt-1 line-clamp-2">{{ entry.description }}</p>
+                <p v-if="entry.description" class="text-sm text-muted mt-1 line-clamp-2">
+                  {{ entry.description }}
+                </p>
               </div>
               <div class="text-xs text-muted whitespace-nowrap">
                 {{ entry.activityCode }}

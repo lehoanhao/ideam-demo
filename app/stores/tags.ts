@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import type { Tag, TagCategory } from '~/types'
+import { mockTags } from '~/utils/mock-data'
+
+const _allTags = [...mockTags]
 
 interface TagsState {
   tags: Tag[]
@@ -25,11 +28,9 @@ export const useTagsStore = defineStore('tags', {
       this.loading = true
       this.error = null
       try {
-        const params = category ? { category } : {}
-        const response = await $fetch<{ data: Tag[] }>('/api/tags', { params })
-        this.tags = response.data
-      } catch (e: any) {
-        this.error = e.message || 'タグの取得に失敗しました'
+        let data = [..._allTags]
+        if (category) data = data.filter(t => t.category === category)
+        this.tags = data
       } finally {
         this.loading = false
       }
@@ -39,12 +40,20 @@ export const useTagsStore = defineStore('tags', {
       this.loading = true
       this.error = null
       try {
-        const tag = await $fetch<Tag>('/api/tags', { method: 'POST', body: data })
+        const now = new Date().toISOString()
+        const tag: Tag = {
+          id: `tag_${String(_allTags.length + 1).padStart(3, '0')}`,
+          name: data.name || '',
+          category: data.category || 'activity',
+          color: data.color || 'neutral',
+          usageCount: 0,
+          createdAt: now,
+          updatedAt: now,
+          ...data
+        }
+        _allTags.unshift(tag)
         this.tags.unshift(tag)
         return tag
-      } catch (e: any) {
-        this.error = e.message || 'タグの作成に失敗しました'
-        return null
       } finally {
         this.loading = false
       }
@@ -54,13 +63,13 @@ export const useTagsStore = defineStore('tags', {
       this.loading = true
       this.error = null
       try {
-        const updated = await $fetch<Tag>(`/api/tags/${id}`, { method: 'PUT', body: data })
-        const idx = this.tags.findIndex(t => t.id === id)
-        if (idx !== -1) this.tags.splice(idx, 1, updated)
+        const idx = _allTags.findIndex(t => t.id === id)
+        if (idx === -1) return null
+        const updated = { ..._allTags[idx], ...data, updatedAt: new Date().toISOString() }
+        _allTags[idx] = updated
+        const storeIdx = this.tags.findIndex(t => t.id === id)
+        if (storeIdx !== -1) this.tags.splice(storeIdx, 1, updated)
         return updated
-      } catch (e: any) {
-        this.error = e.message || 'タグの更新に失敗しました'
-        return null
       } finally {
         this.loading = false
       }
@@ -70,12 +79,10 @@ export const useTagsStore = defineStore('tags', {
       this.loading = true
       this.error = null
       try {
-        await $fetch(`/api/tags/${id}`, { method: 'DELETE' })
+        const idx = _allTags.findIndex(t => t.id === id)
+        if (idx !== -1) _allTags.splice(idx, 1)
         this.tags = this.tags.filter(t => t.id !== id)
         return true
-      } catch (e: any) {
-        this.error = e.message || 'タグの削除に失敗しました'
-        return false
       } finally {
         this.loading = false
       }

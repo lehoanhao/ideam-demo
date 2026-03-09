@@ -8,6 +8,8 @@ export default defineNuxtConfig({
     '@pinia/nuxt'
   ],
 
+  ssr: false,
+
   devtools: {
     enabled: true
   },
@@ -21,13 +23,9 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/api/**': {
-      cors: true
-    },
     '/': {
       redirect: '/proposals'
     }
-
   },
 
   compatibilityDate: '2024-07-11',

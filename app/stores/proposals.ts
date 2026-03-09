@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import type { Proposal, ProposalFilter } from '~/types'
+import { mockProposals, mockProposalFormData } from '~/utils/mock-data'
+
+let _allProposals = [...mockProposals]
 
 export interface FormRowData {
   budgetQty: number | null
@@ -157,14 +160,16 @@ export const useProposalStore = defineStore('proposals', {
       this.loading = true
       this.error = null
       try {
-        const res = await $fetch<{ data: Proposal[], total: number }>('/api/proposals', {
-          query: filters || this.filters
-        })
-        this.proposals = res.data
-        this.totalCount = res.total
+        const f = filters || this.filters
+        let data = [..._allProposals]
+        if (f.search) {
+          const q = f.search.toLowerCase()
+          data = data.filter(p => p.title?.toLowerCase().includes(q) || p.code?.toLowerCase().includes(q) || p.customerName?.toLowerCase().includes(q))
+        }
+        if (f.status) data = data.filter(p => p.status === f.status)
+        this.proposals = data
+        this.totalCount = data.length
         if (filters) this.filters = filters
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : '提案の取得に失敗しました'
       } finally {
         this.loading = false
       }
@@ -174,11 +179,9 @@ export const useProposalStore = defineStore('proposals', {
       this.loading = true
       this.error = null
       try {
-        const data = await $fetch<Proposal>(`/api/proposals/${id}`)
+        const data = _allProposals.find(p => p.id === id) || null
         this.selectedProposal = data
         return data
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : '提案の取得に失敗しました'
       } finally {
         this.loading = false
       }
@@ -188,16 +191,18 @@ export const useProposalStore = defineStore('proposals', {
       this.loading = true
       this.error = null
       try {
-        const newProposal = await $fetch<Proposal>('/api/proposals', {
-          method: 'POST',
-          body: data
-        })
+        const now = new Date().toISOString()
+        const newProposal: Proposal = {
+          ...data,
+          id: `prop_${String(_allProposals.length + 1).padStart(3, '0')}`,
+          code: `P2026-${String(_allProposals.length + 1).padStart(3, '0')}`,
+          createdAt: now,
+          updatedAt: now
+        }
+        _allProposals.unshift(newProposal)
         this.proposals.unshift(newProposal)
         this.totalCount++
         return newProposal
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : '提案の作成に失敗しました'
-        throw err
       } finally {
         this.loading = false
       }
@@ -207,17 +212,14 @@ export const useProposalStore = defineStore('proposals', {
       this.loading = true
       this.error = null
       try {
-        const updated = await $fetch<Proposal>(`/api/proposals/${id}`, {
-          method: 'PUT',
-          body: data
-        })
-        const idx = this.proposals.findIndex(p => p.id === id)
-        if (idx !== -1) this.proposals[idx] = updated
+        const idx = _allProposals.findIndex(p => p.id === id)
+        if (idx === -1) throw new Error('Not found')
+        const updated = { ..._allProposals[idx], ...data, updatedAt: new Date().toISOString() }
+        _allProposals[idx] = updated
+        const storeIdx = this.proposals.findIndex(p => p.id === id)
+        if (storeIdx !== -1) this.proposals[storeIdx] = updated
         if (this.selectedProposal?.id === id) this.selectedProposal = updated
         return updated
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : '提案の更新に失敗しました'
-        throw err
       } finally {
         this.loading = false
       }
@@ -227,13 +229,10 @@ export const useProposalStore = defineStore('proposals', {
       this.loading = true
       this.error = null
       try {
-        await $fetch(`/api/proposals/${id}`, { method: 'DELETE' })
+        _allProposals = _allProposals.filter(p => p.id !== id)
         this.proposals = this.proposals.filter(p => p.id !== id)
         this.totalCount--
         if (this.selectedProposal?.id === id) this.selectedProposal = null
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : '提案の削除に失敗しました'
-        throw err
       } finally {
         this.loading = false
       }
@@ -343,36 +342,36 @@ export const useProposalStore = defineStore('proposals', {
       this.loading = true
       this.error = null
       try {
-        const data = await $fetch<any>(`/api/proposals/${id}`)
-        this.selectedProposal = data
+        const proposal = _allProposals.find(p => p.id === id) || null
+        this.selectedProposal = proposal
 
-        if (data.formRows && data.formRows.length > 0) {
-          this.formRows = data.formRows
+        const formData = mockProposalFormData[id]
+
+        if (formData?.formRows && formData.formRows.length > 0) {
+          this.formRows = formData.formRows
         } else {
           this.formRows = [{ id: 1, data: createEmptyRowData(), createdAt: new Date().toISOString(), updatedAt: null }]
         }
 
-        if (data.rivals && data.rivals.length > 0) {
-          this.rivals = data.rivals
+        if (formData?.rivals && formData.rivals.length > 0) {
+          this.rivals = formData.rivals
         } else {
           this.rivals = [{ id: 1, rival: '', note: '' }]
         }
 
-        if (data.notes && data.notes.length > 0) {
-          this.notes = data.notes
+        if (formData?.notes && formData.notes.length > 0) {
+          this.notes = formData.notes
         } else {
           this.notes = []
         }
 
-        if (data.processHistory && data.processHistory.length > 0) {
-          this.processHistory = data.processHistory
+        if (formData?.processHistory && formData.processHistory.length > 0) {
+          this.processHistory = formData.processHistory
         } else {
           this.processHistory = []
         }
 
-        return data
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : '提案の取得に失敗しました'
+        return proposal
       } finally {
         this.loading = false
       }

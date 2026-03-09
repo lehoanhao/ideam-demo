@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import type { ApprovalRequest, ApprovalStatus } from '~/types'
+import { mockApprovals } from '~/utils/mock-data'
+
+const _allApprovals = [...mockApprovals]
 
 interface ApprovalState {
   items: ApprovalRequest[]
@@ -21,17 +24,17 @@ export const useApprovalsStore = defineStore('approvals', {
   }),
 
   getters: {
-    pendingApprovals: (state) => state.items.filter(a => a.status === 'pending'),
-    approvedApprovals: (state) => state.items.filter(a => a.status === 'approved'),
-    rejectedApprovals: (state) => state.items.filter(a => a.status === 'rejected'),
+    pendingApprovals: state => state.items.filter(a => a.status === 'pending'),
+    approvedApprovals: state => state.items.filter(a => a.status === 'approved'),
+    rejectedApprovals: state => state.items.filter(a => a.status === 'rejected'),
     filteredItems: (state) => {
       let result = [...state.items]
       if (state.filters.search) {
         const q = state.filters.search.toLowerCase()
         result = result.filter(a =>
-          a.targetCode?.toLowerCase().includes(q) ||
-          a.targetTitle?.toLowerCase().includes(q) ||
-          a.requesterName.toLowerCase().includes(q)
+          a.targetCode?.toLowerCase().includes(q)
+          || a.targetTitle?.toLowerCase().includes(q)
+          || a.requesterName.toLowerCase().includes(q)
         )
       }
       if (state.filters.status) {
@@ -49,33 +52,30 @@ export const useApprovalsStore = defineStore('approvals', {
       this.loading = true
       this.error = null
       try {
-        const data = await $fetch<ApprovalRequest[]>('/api/approvals')
-        this.items = data
-      } catch (e: unknown) {
-        this.error = e instanceof Error ? e.message : '承認一覧の取得に失敗しました'
+        this.items = [..._allApprovals]
       } finally {
         this.loading = false
       }
     },
 
     async approveRequest(id: string, notes?: string) {
-      const data = await $fetch<ApprovalRequest>(`/api/approvals/${id}`, {
-        method: 'PUT',
-        body: { action: 'approve', notes }
-      })
-      const idx = this.items.findIndex(a => a.id === id)
-      if (idx !== -1) this.items[idx] = data
-      return data
+      const idx = _allApprovals.findIndex(a => a.id === id)
+      if (idx === -1) throw new Error('Not found')
+      const updated: ApprovalRequest = { ..._allApprovals[idx], status: 'approved' as const, approvedAt: new Date().toISOString(), notes: notes || _allApprovals[idx].notes }
+      _allApprovals[idx] = updated
+      const storeIdx = this.items.findIndex(a => a.id === id)
+      if (storeIdx !== -1) this.items[storeIdx] = updated
+      return updated
     },
 
     async rejectRequest(id: string, rejectionReason: string) {
-      const data = await $fetch<ApprovalRequest>(`/api/approvals/${id}`, {
-        method: 'PUT',
-        body: { action: 'reject', rejectionReason }
-      })
-      const idx = this.items.findIndex(a => a.id === id)
-      if (idx !== -1) this.items[idx] = data
-      return data
+      const idx = _allApprovals.findIndex(a => a.id === id)
+      if (idx === -1) throw new Error('Not found')
+      const updated: ApprovalRequest = { ..._allApprovals[idx], status: 'rejected' as const, rejectionReason, approvedAt: new Date().toISOString() }
+      _allApprovals[idx] = updated
+      const storeIdx = this.items.findIndex(a => a.id === id)
+      if (storeIdx !== -1) this.items[storeIdx] = updated
+      return updated
     },
 
     setFilters(filters: Partial<ApprovalState['filters']>) {

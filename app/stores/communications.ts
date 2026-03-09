@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { CommunicationRecord, CommunicationChannel } from '~/types'
+import { mockCommunications } from '~/utils/mock-data'
 
 export const useCommunicationsStore = defineStore('communications', {
   state: () => ({
@@ -20,12 +21,15 @@ export const useCommunicationsStore = defineStore('communications', {
       this.loading = true
       this.error = null
       try {
-        const params = filters || this.filters
-        const response = await $fetch<{ data: CommunicationRecord[], total: number }>('/api/communications', { params })
-        this.records = response.data
-        this.total = response.total
-      } catch (e: any) {
-        this.error = e.message || '送信履歴の取得に失敗しました'
+        const f = filters || this.filters
+        let data = [...mockCommunications]
+        if (f.channel) data = data.filter(r => r.channel === f.channel)
+        if (f.search) {
+          const q = f.search.toLowerCase()
+          data = data.filter(r => r.recipientName?.toLowerCase().includes(q) || r.procurementCode?.toLowerCase().includes(q))
+        }
+        this.records = data
+        this.total = data.length
       } finally {
         this.loading = false
       }

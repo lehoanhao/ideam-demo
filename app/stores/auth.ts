@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
-import type { User, AuthSession } from '~/types'
+import type { User } from '~/types'
+import { mockUsers } from '~/utils/mock-data'
+
+const AUTH_STORAGE_KEY = 'ideam_auth_user'
 
 interface AuthState {
   user: User | null
@@ -17,10 +20,10 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.user,
-    isAdmin: (state) => state.user?.role === 'admin',
-    isManager: (state) => ['admin', 'manager'].includes(state.user?.role || ''),
-    userDisplayName: (state) => state.user?.name || '',
+    isAuthenticated: state => !!state.user,
+    isAdmin: state => state.user?.role === 'admin',
+    isManager: state => ['admin', 'manager'].includes(state.user?.role || ''),
+    userDisplayName: state => state.user?.name || '',
     userRole: (state) => {
       const roleMap: Record<string, string> = {
         admin: '管理者',
@@ -34,42 +37,46 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async login(email: string, password: string) {
+    async login(email: string, _password: string) {
       this.loading = true
       this.error = null
       try {
-        const session = await $fetch<AuthSession>('/api/auth/login', {
-          method: 'POST',
-          body: { email, password }
-        })
-        this.user = session.user
-        this.token = session.token.accessToken
-        return session
-      } catch (e: any) {
-        this.error = e.data?.message || 'ログインに失敗しました'
-        throw e
+        const user = mockUsers.find(u => u.email === email)
+        if (!user) {
+          this.error = 'メールアドレスまたはパスワードが正しくありません'
+          throw new Error(this.error)
+        }
+        this.user = user
+        this.token = `mock-token-${user.id}`
+        if (import.meta.client) {
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user))
+        }
+        return { user, token: { accessToken: this.token, expiresAt: '' } }
       } finally {
         this.loading = false
       }
     },
 
     async logout() {
-      try {
-        await $fetch('/api/auth/logout', { method: 'POST' })
-      } finally {
-        this.user = null
-        this.token = null
-        navigateTo('/login')
+      this.user = null
+      this.token = null
+      if (import.meta.client) {
+        localStorage.removeItem(AUTH_STORAGE_KEY)
       }
+      navigateTo('/login')
     },
 
     async fetchMe() {
       this.loading = true
       try {
-        const user = await $fetch<User>('/api/auth/me')
-        this.user = user
-        return user
-      } catch {
+        if (import.meta.client) {
+          const stored = localStorage.getItem(AUTH_STORAGE_KEY)
+          if (stored) {
+            this.user = JSON.parse(stored)
+            this.token = `mock-token-${this.user!.id}`
+            return this.user
+          }
+        }
         this.user = null
         this.token = null
         return null

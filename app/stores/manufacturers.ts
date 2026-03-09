@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import type { Manufacturer, ManufacturerFilter } from '~/types'
+import { mockManufacturers } from '~/utils/mock-data'
+
+let _allManufacturers = [...mockManufacturers]
 
 interface ManufacturerState {
   manufacturers: Manufacturer[]
@@ -25,14 +28,15 @@ export const useManufacturerStore = defineStore('manufacturers', {
       this.loading = true
       this.error = null
       try {
-        const res = await $fetch<{ data: Manufacturer[], total: number }>('/api/manufacturers', {
-          query: filters || this.filters
-        })
-        this.manufacturers = res.data
-        this.totalCount = res.total
-        this.filters = filters || this.filters
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'メーカーの取得に失敗しました'
+        const f = filters || this.filters
+        let data = [..._allManufacturers]
+        if (f.search) {
+          const q = f.search.toLowerCase()
+          data = data.filter(m => m.name.toLowerCase().includes(q) || m.code?.toLowerCase().includes(q))
+        }
+        this.manufacturers = data
+        this.totalCount = data.length
+        this.filters = f
       } finally {
         this.loading = false
       }
@@ -42,11 +46,9 @@ export const useManufacturerStore = defineStore('manufacturers', {
       this.loading = true
       this.error = null
       try {
-        const data = await $fetch<Manufacturer>(`/api/manufacturers/${id}`)
+        const data = _allManufacturers.find(m => m.id === id) || null
         this.selectedManufacturer = data
         return data
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'メーカーの取得に失敗しました'
       } finally {
         this.loading = false
       }
@@ -56,16 +58,17 @@ export const useManufacturerStore = defineStore('manufacturers', {
       this.loading = true
       this.error = null
       try {
-        const newMfr = await $fetch<Manufacturer>('/api/manufacturers', {
-          method: 'POST',
-          body: mfrData
-        })
+        const now = new Date().toISOString()
+        const newMfr: Manufacturer = {
+          ...mfrData,
+          id: `mfr_${String(_allManufacturers.length + 1).padStart(3, '0')}`,
+          createdAt: now,
+          updatedAt: now
+        }
+        _allManufacturers.push(newMfr)
         this.manufacturers.push(newMfr)
         this.totalCount++
         return newMfr
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'メーカーの作成に失敗しました'
-        throw err
       } finally {
         this.loading = false
       }
@@ -75,17 +78,14 @@ export const useManufacturerStore = defineStore('manufacturers', {
       this.loading = true
       this.error = null
       try {
-        const updated = await $fetch<Manufacturer>(`/api/manufacturers/${id}`, {
-          method: 'PUT',
-          body: mfrData
-        })
-        const idx = this.manufacturers.findIndex(m => m.id === id)
-        if (idx !== -1) this.manufacturers[idx] = updated
+        const idx = _allManufacturers.findIndex(m => m.id === id)
+        if (idx === -1) throw new Error('Manufacturer not found')
+        const updated = { ..._allManufacturers[idx], ...mfrData, updatedAt: new Date().toISOString() }
+        _allManufacturers[idx] = updated
+        const storeIdx = this.manufacturers.findIndex(m => m.id === id)
+        if (storeIdx !== -1) this.manufacturers[storeIdx] = updated
         if (this.selectedManufacturer?.id === id) this.selectedManufacturer = updated
         return updated
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'メーカーの更新に失敗しました'
-        throw err
       } finally {
         this.loading = false
       }
@@ -95,13 +95,10 @@ export const useManufacturerStore = defineStore('manufacturers', {
       this.loading = true
       this.error = null
       try {
-        await $fetch(`/api/manufacturers/${id}`, { method: 'DELETE' })
+        _allManufacturers = _allManufacturers.filter(m => m.id !== id)
         this.manufacturers = this.manufacturers.filter(m => m.id !== id)
         this.totalCount--
         if (this.selectedManufacturer?.id === id) this.selectedManufacturer = null
-      } catch (err) {
-        this.error = err instanceof Error ? err.message : 'メーカーの削除に失敗しました'
-        throw err
       } finally {
         this.loading = false
       }

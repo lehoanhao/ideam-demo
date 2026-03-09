@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import type { Procurement, ProcurementFilter } from '~/types'
+import { mockProcurements } from '~/utils/mock-data'
+
+let _allProcurements = [...mockProcurements]
 
 interface ProcurementState {
   procurements: Procurement[]
@@ -21,10 +24,10 @@ export const useProcurementStore = defineStore('procurements', {
   }),
 
   getters: {
-    draftProcurements: (state) => state.procurements.filter(p => p.status === 'draft'),
-    activeProcurements: (state) =>
+    draftProcurements: state => state.procurements.filter(p => p.status === 'draft'),
+    activeProcurements: state =>
       state.procurements.filter(p => !['completed', 'cancelled'].includes(p.status)),
-    totalOrdered: (state) =>
+    totalOrdered: state =>
       state.procurements.reduce((sum, p) => sum + (p.totalOrderedAmount || 0), 0)
   },
 
@@ -33,12 +36,15 @@ export const useProcurementStore = defineStore('procurements', {
       this.loading = true
       this.error = null
       try {
-        const params = { ...this.filters, ...filters }
-        const result = await $fetch<{ data: Procurement[]; total: number }>('/api/procurements', { params })
-        this.procurements = result.data
-        this.total = result.total
-      } catch (e: any) {
-        this.error = e.message || '仕入れデータの取得に失敗しました'
+        const f = { ...this.filters, ...filters }
+        let data = [..._allProcurements]
+        if (f.search) {
+          const q = f.search.toLowerCase()
+          data = data.filter(p => p.code?.toLowerCase().includes(q) || p.proposalCode?.toLowerCase().includes(q))
+        }
+        if (f.status) data = data.filter(p => p.status === f.status)
+        this.procurements = data
+        this.total = data.length
       } finally {
         this.loading = false
       }
@@ -47,33 +53,41 @@ export const useProcurementStore = defineStore('procurements', {
     async getProcurementById(id: string) {
       this.loading = true
       try {
-        const data = await $fetch<Procurement>(`/api/procurements/${id}`)
+        const data = _allProcurements.find(p => p.id === id) || null
         this.currentProcurement = data
         return data
-      } catch (e: any) {
-        this.error = e.message
-        return null
       } finally {
         this.loading = false
       }
     },
 
     async createProcurement(data: Omit<Procurement, 'id' | 'code' | 'createdAt' | 'updatedAt'>) {
-      const result = await $fetch<Procurement>('/api/procurements', { method: 'POST', body: data })
+      const now = new Date().toISOString()
+      const result: Procurement = {
+        ...data,
+        id: `proc_${String(_allProcurements.length + 1).padStart(3, '0')}`,
+        code: `SC2026-${String(_allProcurements.length + 1).padStart(3, '0')}`,
+        createdAt: now,
+        updatedAt: now
+      }
+      _allProcurements.unshift(result)
       this.procurements.unshift(result)
       return result
     },
 
     async updateProcurement(id: string, data: Partial<Procurement>) {
-      const result = await $fetch<Procurement>(`/api/procurements/${id}`, { method: 'PUT', body: data })
-      const idx = this.procurements.findIndex(p => p.id === id)
-      if (idx !== -1) this.procurements[idx] = result
+      const idx = _allProcurements.findIndex(p => p.id === id)
+      if (idx === -1) throw new Error('Not found')
+      const result = { ..._allProcurements[idx], ...data, updatedAt: new Date().toISOString() }
+      _allProcurements[idx] = result
+      const storeIdx = this.procurements.findIndex(p => p.id === id)
+      if (storeIdx !== -1) this.procurements[storeIdx] = result
       this.currentProcurement = result
       return result
     },
 
     async deleteProcurement(id: string) {
-      await $fetch(`/api/procurements/${id}`, { method: 'DELETE' })
+      _allProcurements = _allProcurements.filter(p => p.id !== id)
       this.procurements = this.procurements.filter(p => p.id !== id)
     },
 

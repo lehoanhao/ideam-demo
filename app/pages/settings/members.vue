@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Member } from '~/types'
+import { mockMembers } from '~/utils/mock-data'
 
-const { data: members } = await useFetch<Member[]>('/api/members', { default: () => [] })
+const members = ref<Member[]>(mockMembers)
 
 const q = ref('')
 

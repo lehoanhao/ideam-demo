@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { HistoricalRecord, HistoricalFilter } from '~/types'
+import { mockHistoricalRecords } from '~/utils/mock-data'
 
 interface HistoricalState {
   records: HistoricalRecord[]
@@ -28,12 +29,14 @@ export const useHistoricalStore = defineStore('historical', {
       this.loading = true
       this.error = null
       try {
-        const params = { ...this.filters, ...filters }
-        const result = await $fetch<{ data: HistoricalRecord[]; total: number }>('/api/historical', { params })
-        this.records = result.data
-        this.total = result.total
-      } catch (e: any) {
-        this.error = e.message || '過去データの取得に失敗しました'
+        const f = { ...this.filters, ...filters }
+        let data = [...mockHistoricalRecords]
+        if (f.search) {
+          const q = f.search.toLowerCase()
+          data = data.filter(r => r.customerName?.toLowerCase().includes(q) || r.productName?.toLowerCase().includes(q))
+        }
+        this.records = data
+        this.total = data.length
       } finally {
         this.loading = false
       }

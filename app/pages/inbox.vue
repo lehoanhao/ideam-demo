@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { breakpointsTailwind } from '@vueuse/core'
 import type { Mail } from '~/types'
+import { mockMails } from '~/utils/mock-data'
 
 const tabItems = [{
   label: 'すべて',
@@ -12,7 +13,7 @@ const tabItems = [{
 }]
 const selectedTab = ref('all')
 
-const { data: mails } = await useFetch<Mail[]>('/api/mails', { default: () => [] })
+const mails = ref<Mail[]>(mockMails)
 
 // Filter mails based on the selected tab
 const filteredMails = computed(() => {
