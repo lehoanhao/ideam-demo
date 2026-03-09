@@ -1,12 +1,12 @@
 export default defineNuxtRouteMiddleware(async (to) => {
-  if (to.path === '/login') return
+  if (to.path.startsWith('/auth')) return
 
   const authStore = useAuthStore()
 
   if (!authStore.isAuthenticated) {
     const user = await authStore.fetchMe()
     if (!user) {
-      return navigateTo('/login')
+      return navigateTo('/auth/login')
     }
   }
 })

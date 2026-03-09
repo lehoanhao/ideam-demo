@@ -694,6 +694,28 @@ function getCommentFieldLabel(fieldKey: string) {
 function formatFieldLabel(field: CommentField) {
   return `${getCommentRowLabel(field.rowId)} / ${getCommentFieldLabel(field.fieldKey)}`
 }
+
+// --- Budget computed ---
+const budgetDescription = computed(() => {
+  return proposalStore.formRows
+    .map((r: { data: { budgetPrice: number | null, budgetQty: number | null } }, i: number) => {
+      const price = r.data.budgetPrice ?? 0
+      const qty = r.data.budgetQty ?? 0
+      return `行${i + 1}: ${price.toLocaleString()} × ${qty.toLocaleString()}`
+    })
+    .join(' / ')
+})
+
+const budgetTotal = computed(() => {
+  return proposalStore.formRows.reduce(
+    (sum: number, r: { data: { budgetPrice: number | null, budgetQty: number | null } }) => {
+      const price = r.data.budgetPrice ?? 0
+      const qty = r.data.budgetQty ?? 0
+      return sum + price * qty
+    },
+    0
+  )
+})
 </script>
 
 <template>
@@ -943,10 +965,10 @@ function formatFieldLabel(field: CommentField) {
       <div class="border-t border-default px-4 py-2">
         <div class="flex flex-row gap-1">
           <UFormField label="予算備考" class="w-full" size="xs">
-            <UInput class="w-full" placeholder="" />
+            <UInput :model-value="budgetDescription" class="w-full" readonly />
           </UFormField>
           <UFormField label="予算合計" class="w-full" size="xs">
-            <UInput class="w-full" placeholder="" />
+            <UInput :model-value="budgetTotal.toLocaleString()" class="w-full" readonly />
           </UFormField>
         </div>
         <div class="flex flex-col justify-between gap-2 mt-4">

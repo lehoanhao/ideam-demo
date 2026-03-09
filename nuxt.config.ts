@@ -8,10 +8,6 @@ export default defineNuxtConfig({
     '@pinia/nuxt'
   ],
 
-  colorMode: {
-    preference: 'light'
-  },
-
   ssr: false,
 
   devtools: {
@@ -24,6 +20,10 @@ export default defineNuxtConfig({
     options: {
       scrollBehaviorType: 'smooth'
     }
+  },
+
+  colorMode: {
+    preference: 'light'
   },
 
   routeRules: {

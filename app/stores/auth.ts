@@ -63,7 +63,7 @@ export const useAuthStore = defineStore('auth', {
       if (import.meta.client) {
         localStorage.removeItem(AUTH_STORAGE_KEY)
       }
-      navigateTo('/login')
+      navigateTo('/auth/login')
     },
 
     async fetchMe() {
