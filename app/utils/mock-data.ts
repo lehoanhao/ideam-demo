@@ -16,7 +16,6 @@ import type {
   Notification
 } from '~/types'
 import type { FormRow, RivalEntry, NoteEntry, ProcessHistoryEntry } from '~/stores/proposals'
-import { createEmptyRowData } from '~/stores/proposals'
 import { sub } from 'date-fns'
 
 // ============================================================================
@@ -631,7 +630,7 @@ for (const p of mockProposals) {
       history.push({ step: s, userName: '加藤 誠', completedAt: '2026-03-01T09:00:00Z' })
     }
     mockProposalFormData[p.id] = {
-      formRows: [{ id: 1, data: { ...createEmptyRowData(), budgetQty: 50, itemGroup: '食品', productCode: `GEN-${p.id.replace('prop_', '')}`, productName: `${p.title}商品`, sellingPrice: '1500', packQty: '1', listPrice: '1800', budgetPrice: 1500, catalogName: 'サンプルカタログ', catalogPage: 'P.1', manufacturerName: 'サンプルメーカー', accountName: p.customerName, rfqType: '見積依頼', requestDate: '2026-03-01', costPrice: '1200', sampleQty: '1' }, createdAt: p.createdAt, updatedAt: p.updatedAt }],
+      formRows: [{ id: 1, data: { budgetQty: 50, itemGroup: '食品', productCode: `GEN-${p.id.replace('prop_', '')}`, productName: `${p.title}商品`, sellingPrice: '1500', packQty: '1', listPrice: '1800', budgetPrice: 1500, catalogName: 'サンプルカタログ', catalogPage: 'P.1', manufacturerName: 'サンプルメーカー', accountName: p.customerName, rfqType: '見積依頼', requestDate: '2026-03-01', costPrice: '1200', sampleQty: '1', arrivalDate: '', costNotes: '', deliveryNotes: '', adoptionType: '', contactDate: '' }, createdAt: p.createdAt, updatedAt: p.updatedAt }],
       rivals: [{ id: 1, rival: '', note: '' }],
       notes: [],
       processHistory: history
