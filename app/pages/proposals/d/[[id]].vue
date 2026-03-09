@@ -691,7 +691,7 @@ function formatFieldLabel(field: CommentField) {
 </script>
 
 <template>
-  <div class="flex h-full overflow-hidden bg-elevated/60">
+  <div class="w-full flex justify-between h-full overflow-hidden bg-elevated/60">
     <!-- Main panel -->
     <div class="flex-1 w-full flex flex-col min-w-0 overflow-auto">
       <div class="flex-1 overflow-auto">
@@ -745,7 +745,7 @@ function formatFieldLabel(field: CommentField) {
     <!-- Sidebar -->
     <div
       :class="showSidebar ? 'w-96 border-l border-default' : 'w-0'"
-      class="flex-shrink-0 flex flex-col bg-white overflow-hidden transition-all duration-300 ease-in-out"
+      class="shrink-0 flex flex-col bg-white dark:bg-neutral-800 overflow-hidden transition-all duration-300 ease-in-out"
     >
       <div class="border-b border-default px-4 py-2 space-y-2">
         <h2 class="text-sm font-semibold">

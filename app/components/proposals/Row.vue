@@ -41,7 +41,7 @@ function formatDateTime(iso: string) {
 <template>
   <div
     :data-row-id="rowId"
-    class="flex flex-col gap-2 group border rounded-md p-3 bg-white dark:bg-gray-800 transition-colors"
+    class="flex flex-col gap-2 group border rounded-md p-3 bg-white dark:bg-neutral-800 transition-colors"
     :class="picking ? 'border-primary border-dashed cursor-pointer' : 'border-muted'"
   >
     <div class="flex flex-row gap-3 justify-between">
