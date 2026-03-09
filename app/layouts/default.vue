@@ -255,6 +255,9 @@ onMounted(async () => {
           }"
         />
       </template>
+      <template #footer="{ collapsed }">
+        <UserMenu :collapsed="true" />
+      </template>
     </UDashboardSidebar>
     <!-- <UDashboardSidebar
       id="default"

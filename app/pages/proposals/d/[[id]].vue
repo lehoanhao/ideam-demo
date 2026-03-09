@@ -741,7 +741,6 @@ function formatFieldLabel(field: CommentField) {
         </div>
       </div>
     </div>
-    {{ currentStep }}
     <!-- Sidebar -->
     <div
       :class="showSidebar ? 'w-96 border-l border-default' : 'w-0'"

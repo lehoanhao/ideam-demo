@@ -161,10 +161,6 @@ const labels = [
         />
       </div>
     </template>
-
-    <template #footer="{ collapsed }">
-      <UserMenu :collapsed="collapsed" />
-    </template>
   </UDashboardSidebar>
 
   <NuxtPage />
