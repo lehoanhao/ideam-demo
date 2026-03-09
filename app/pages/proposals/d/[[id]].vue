@@ -72,7 +72,7 @@ const statusToStep: Record<ProposalStatus, number> = {
   quoted: 2,
   pricing: 3,
   pending_approval: 4,
-  approved: 4,
+  approved: 6,
   rejected: 5,
   confirming: 6,
   completed: 6,
@@ -313,6 +313,13 @@ const primaryButtonConfig = computed(() => {
         icon: 'i-lucide-check',
         color: 'success' as const
       }
+    // approved
+    case 'approved':
+      return {
+        label: '完了にする',
+        icon: 'i-nrk-media-media-complete',
+        color: 'success' as const
+      }
     case 'confirming':
       return {
         label: '完了にする',
@@ -363,8 +370,8 @@ const secondaryButtonConfig = computed(() => {
       }
     default:
       return {
-        label: '下書き保存',
-        icon: 'i-la-firstdraft',
+        label: '更新',
+        icon: 'i-lucide-save',
         color: 'neutral' as const
       }
   }
@@ -521,7 +528,10 @@ const tabs = computed(() => {
 const stepActionMap: Record<number, { action: string, icon: string }> = {
   1: { action: '仕入れ依頼をしました', icon: 'i-mdi-cart' },
   2: { action: 'メーカー依頼をしました', icon: 'i-bi-send' },
-  3: { action: '仕入れ値段を決定しました', icon: 'i-fluent-money-calculator-20-regular' },
+  3: {
+    action: '仕入れ値段を決定しました',
+    icon: 'i-fluent-money-calculator-20-regular'
+  },
   4: { action: '承認しました', icon: 'i-material-symbols-order-approve' },
   5: { action: '完了にしました', icon: 'i-nrk-media-media-complete' }
 }
@@ -580,7 +590,9 @@ const combinedTimeline = computed<TimelineEntry[]>(() => {
     entries.push({
       type: 'history',
       date: p.approvalDate || p.updatedAt,
-      userName: p.approvedBy ? (userNameMap[p.approvedBy] || p.approvedBy) : '管理者',
+      userName: p.approvedBy
+        ? userNameMap[p.approvedBy] || p.approvedBy
+        : '管理者',
       action: '差し戻しました',
       icon: 'i-lucide-undo-2'
     })
@@ -600,12 +612,16 @@ const combinedTimeline = computed<TimelineEntry[]>(() => {
   }
 
   // Sort chronologically (oldest first)
-  entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  entries.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  )
   return entries
 })
 
 // --- Comment field picking helpers ---
-const isPickingCommentField = computed(() => proposalStore.pickingCommentId !== null)
+const isPickingCommentField = computed(
+  () => proposalStore.pickingCommentId !== null
+)
 const commentPickingFields = ref<CommentField[]>([])
 const activeCommentId = ref<number | null>(null)
 
@@ -802,7 +818,10 @@ function formatFieldLabel(field: CommentField) {
               >
                 <UIcon name="i-heroicons-check-circle" class="size-3" />
                 {{ formatFieldLabel(field) }}
-                <button class="hover:text-red-500" @click="removePickedField(idx)">
+                <button
+                  class="hover:text-red-500"
+                  @click="removePickedField(idx)"
+                >
                   <UIcon name="i-heroicons-x-mark" class="size-3" />
                 </button>
               </div>
@@ -834,18 +853,37 @@ function formatFieldLabel(field: CommentField) {
               class="flex gap-3 rounded-md p-1 transition-colors"
               :class="[
                 entry.type === 'comment' ? 'cursor-pointer' : '',
-                entry.type === 'comment' && activeCommentId === entry.commentId ? 'bg-warning/10' : entry.type === 'comment' ? 'hover:bg-muted/30' : ''
+                entry.type === 'comment' && activeCommentId === entry.commentId
+                  ? 'bg-warning/10'
+                  : entry.type === 'comment'
+                    ? 'hover:bg-muted/30'
+                    : ''
               ]"
-              @click="entry.type === 'comment' && entry.commentId ? onCommentClick(comments.find(c => c.id === entry.commentId)!) : undefined"
+              @click="
+                entry.type === 'comment' && entry.commentId
+                  ? onCommentClick(
+                    comments.find((c) => c.id === entry.commentId)!
+                  )
+                  : undefined
+              "
             >
               <!-- Indicator -->
               <div class="flex flex-col items-center">
                 <template v-if="entry.type === 'comment'">
-                  <UAvatar :src="entry.userAvatar" :alt="entry.userName" size="xs" />
+                  <UAvatar
+                    :src="entry.userAvatar"
+                    :alt="entry.userName"
+                    size="xs"
+                  />
                 </template>
                 <template v-else>
-                  <div class="flex items-center justify-center size-6 rounded-full bg-primary/10 text-primary">
-                    <UIcon :name="entry.icon || 'i-heroicons-check-circle'" class="size-3.5" />
+                  <div
+                    class="flex items-center justify-center size-6 rounded-full bg-primary/10 text-primary"
+                  >
+                    <UIcon
+                      :name="entry.icon || 'i-heroicons-check-circle'"
+                      class="size-3.5"
+                    />
                   </div>
                 </template>
                 <div class="flex-1 w-px bg-primary mt-1" />
@@ -854,7 +892,9 @@ function formatFieldLabel(field: CommentField) {
               <div class="flex-1 pb-3">
                 <div class="flex items-center gap-2 mb-0.5">
                   <span class="text-xs font-medium">{{ entry.userName }}</span>
-                  <span class="text-xs text-muted">{{ useTimeAgo(new Date(entry.date)) }}</span>
+                  <span class="text-xs text-muted">{{
+                    useTimeAgo(new Date(entry.date))
+                  }}</span>
                 </div>
                 <!-- History entry -->
                 <template v-if="entry.type === 'history'">
@@ -864,7 +904,10 @@ function formatFieldLabel(field: CommentField) {
                 </template>
                 <!-- Comment entry -->
                 <template v-else>
-                  <div v-if="entry.fields && entry.fields.length > 0" class="flex flex-wrap gap-1 mb-1">
+                  <div
+                    v-if="entry.fields && entry.fields.length > 0"
+                    class="flex flex-wrap gap-1 mb-1"
+                  >
                     <div
                       v-for="field in entry.fields"
                       :key="`${field.rowId}-${field.fieldKey}`"
