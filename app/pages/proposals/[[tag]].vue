@@ -56,7 +56,6 @@ const selectedStatuses = ref<ProposalStatus[]>([])
 onMounted(() => { proposalStore.fetchProposals() })
 
 const statusOptions = [
-  { label: 'すべて', value: '' },
   { label: '新規作成中', value: 'draft' },
   { label: '仕入れ依頼中', value: 'submitted' },
   { label: 'メーカー依頼中', value: 'quoted' },
@@ -97,6 +96,38 @@ const statusLabelMap: Record<ProposalStatus, string> = {
 
 const searchQuery = ref('')
 
+// Advanced search
+const showAdvancedSearch = ref(false)
+const advancedSearch = ref({
+  customerId: '',
+  title: '',
+  productName: '',
+  deadlineFrom: '',
+  deadlineTo: '',
+  code: '',
+  status: '' as ProposalStatus | '',
+  createdFrom: '',
+  createdTo: '',
+  minAmount: '',
+  maxAmount: ''
+})
+
+function resetAdvancedSearch() {
+  advancedSearch.value = {
+    customerId: '',
+    title: '',
+    productName: '',
+    deadlineFrom: '',
+    deadlineTo: '',
+    code: '',
+    status: '',
+    createdFrom: '',
+    createdTo: '',
+    minAmount: '',
+    maxAmount: ''
+  }
+}
+
 const activeStatuses = computed(() => {
   if (!currentTag.value) return []
   return tagToStatuses[currentTag.value] || []
@@ -104,6 +135,8 @@ const activeStatuses = computed(() => {
 
 const filteredProposals = computed(() => {
   let list: Proposal[] = proposalStore.proposals
+
+  // Simple search
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     list = list.filter((p: Proposal) =>
@@ -112,9 +145,55 @@ const filteredProposals = computed(() => {
       || p.customerName.toLowerCase().includes(q)
     )
   }
+
+  // Tag-based status filter
   if (activeStatuses.value.length > 0) {
     list = list.filter((p: Proposal) => activeStatuses.value.includes(p.status as ProposalStatus))
   }
+
+  // Advanced search filters
+  const adv = advancedSearch.value
+  if (adv.customerId) {
+    list = list.filter(p => p.customerId === adv.customerId)
+  }
+  if (adv.title) {
+    const q = adv.title.toLowerCase()
+    list = list.filter(p => p.title.toLowerCase().includes(q))
+  }
+  if (adv.productName) {
+    const q = adv.productName.toLowerCase()
+    list = list.filter(p =>
+      p.lineItems.some(item => item.productName.toLowerCase().includes(q))
+    )
+  }
+  if (adv.code) {
+    const q = adv.code.toLowerCase()
+    list = list.filter(p => p.code.toLowerCase().includes(q))
+  }
+  if (adv.status) {
+    list = list.filter(p => p.status === adv.status)
+  }
+  if (adv.deadlineFrom) {
+    list = list.filter(p => p.deadline && p.deadline >= adv.deadlineFrom)
+  }
+  if (adv.deadlineTo) {
+    list = list.filter(p => p.deadline && p.deadline <= adv.deadlineTo)
+  }
+  if (adv.createdFrom) {
+    list = list.filter(p => p.createdAt >= adv.createdFrom)
+  }
+  if (adv.createdTo) {
+    list = list.filter(p => p.createdAt <= adv.createdTo)
+  }
+  if (adv.minAmount) {
+    const min = Number(adv.minAmount)
+    if (!isNaN(min)) list = list.filter(p => p.totalAmount >= min)
+  }
+  if (adv.maxAmount) {
+    const max = Number(adv.maxAmount)
+    if (!isNaN(max)) list = list.filter(p => p.totalAmount <= max)
+  }
+
   return list
 })
 
@@ -240,6 +319,13 @@ const columns: TableColumn<Proposal>[] = [
           placeholder="提案番号・顧客名・タイトルで検索..."
           class="w-72"
         />
+        <UButton
+          :icon="showAdvancedSearch ? 'i-lucide-chevron-up' : 'i-lucide-sliders-horizontal'"
+          :label="showAdvancedSearch ? '検索を閉じる' : '高度な検索'"
+          :color="showAdvancedSearch ? 'primary' : 'neutral'"
+          variant="outline"
+          @click="showAdvancedSearch = !showAdvancedSearch"
+        />
       </template>
       <template #right>
         <span class="text-sm text-muted">
@@ -247,6 +333,99 @@ const columns: TableColumn<Proposal>[] = [
         </span>
       </template>
     </UDashboardToolbar>
+
+    <!-- Advanced Search Panel -->
+    <div
+      v-show="showAdvancedSearch"
+      class="border-b border-default bg-default/50 px-4 py-4 transition-all duration-200 ease-out"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <UFormField label="提案No" size="xs">
+          <UInput
+            v-model="advancedSearch.code"
+            placeholder="例: PR-001"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="顧客" size="xs">
+          <CustomersSelect v-model="advancedSearch.customerId" class="w-full" />
+        </UFormField>
+        <UFormField label="案件名" size="xs">
+          <UInput
+            v-model="advancedSearch.title"
+            placeholder="案件名で検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="商品名" size="xs">
+          <UInput
+            v-model="advancedSearch.productName"
+            placeholder="商品名で検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="ステータス" size="xs">
+          <USelect
+            v-model="advancedSearch.status"
+            :items="statusOptions"
+            value-key="value"
+            placeholder="すべて"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="納期（開始）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.deadlineFrom" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="納期（終了）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.deadlineTo" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="作成日（開始）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.createdFrom" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="作成日（終了）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.createdTo" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="金額（下限）" size="xs">
+          <UInput
+            v-model="advancedSearch.minAmount"
+            type="number"
+            placeholder="¥0"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="金額（上限）" size="xs">
+          <UInput
+            v-model="advancedSearch.maxAmount"
+            type="number"
+            placeholder="¥999,999"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <UButton
+          icon="i-lucide-rotate-ccw"
+          label="リセット"
+          color="neutral"
+          variant="outline"
+          size="xs"
+          @click="resetAdvancedSearch"
+        />
+        <UButton
+          icon="i-lucide-search"
+          label="検索"
+          color="primary"
+          size="xs"
+          @click="pagination.pageIndex = 0"
+        />
+      </div>
+    </div>
 
     <UTable
       v-model:row-selection="rowSelection"

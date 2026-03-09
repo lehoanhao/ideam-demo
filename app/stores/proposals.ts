@@ -129,6 +129,13 @@ interface ProposalState {
   pickingNoteId: number | null
   activeNoteId: number | null
   pickingCommentId: number | null
+  // Proposal-level dates
+  formCreatedDate: string
+  formLastUpdatedDate: string
+  formProposalDate: string
+  formDecisionDate: string
+  formDeliveryDate: string
+  formApprovalDate: string
 }
 
 export const useProposalStore = defineStore('proposals', {
@@ -146,7 +153,13 @@ export const useProposalStore = defineStore('proposals', {
     highlights: [],
     pickingNoteId: null,
     activeNoteId: null,
-    pickingCommentId: null
+    pickingCommentId: null,
+    formCreatedDate: '',
+    formLastUpdatedDate: '',
+    formProposalDate: '',
+    formDecisionDate: '',
+    formDeliveryDate: '',
+    formApprovalDate: ''
   }),
 
   getters: {
@@ -371,6 +384,16 @@ export const useProposalStore = defineStore('proposals', {
           this.processHistory = []
         }
 
+        // Populate proposal-level dates
+        if (proposal) {
+          this.formCreatedDate = proposal.createdAt?.slice(0, 10) ?? ''
+          this.formLastUpdatedDate = proposal.updatedAt?.slice(0, 10) ?? ''
+          this.formProposalDate = (proposal as any).proposalDate?.slice(0, 10) ?? ''
+          this.formDecisionDate = (proposal as any).decisionDate?.slice(0, 10) ?? ''
+          this.formDeliveryDate = proposal.requiredDeliveryDate?.slice(0, 10) ?? ''
+          this.formApprovalDate = proposal.approvalDate?.slice(0, 10) ?? ''
+        }
+
         return proposal
       } finally {
         this.loading = false
@@ -387,6 +410,12 @@ export const useProposalStore = defineStore('proposals', {
       this.pickingNoteId = null
       this.activeNoteId = null
       this.pickingCommentId = null
+      this.formCreatedDate = ''
+      this.formLastUpdatedDate = ''
+      this.formProposalDate = ''
+      this.formDecisionDate = ''
+      this.formDeliveryDate = ''
+      this.formApprovalDate = ''
     }
   }
 })

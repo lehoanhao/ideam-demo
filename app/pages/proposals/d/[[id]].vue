@@ -1097,3 +1097,50 @@ const budgetTotal = computed(() => {
     </UModal>
   </div>
 </template>
+
+<style scoped>
+@property --stepper-border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes stepper-spin-border {
+  to {
+    --stepper-border-angle: 360deg;
+  }
+}
+
+:deep([data-state="active"] [data-slot="trigger"]) {
+  position: relative;
+  overflow: visible;
+  z-index: 0;
+}
+
+:deep([data-state="active"] [data-slot="trigger"])::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from var(--stepper-border-angle, 0deg),
+    #6366f1,
+    #ec4899,
+    #f59e0b,
+    #10b981,
+    #3b82f6,
+    #6366f1
+  );
+  animation: stepper-spin-border 3s linear infinite;
+  z-index: -1;
+}
+
+:deep([data-state="active"] [data-slot="trigger"])::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 9999px;
+  background: var(--ui-color-primary-500);
+  z-index: -1;
+}
+</style>

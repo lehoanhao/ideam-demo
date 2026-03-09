@@ -20,6 +20,7 @@ const mainLinks = [
     label: '案件',
     icon: 'i-lucide-file-text',
     to: '/proposals',
+    exact: false,
     chip: {
       color: 'error',
       size: 'md'
@@ -28,30 +29,35 @@ const mainLinks = [
   {
     label: '顧客',
     icon: 'i-lucide-users',
-    to: '/customers'
+    to: '/customers',
+    exact: false
   },
   {
     label: 'メーカー',
     icon: 'i-lucide-building-2',
-    to: '/manufacturers'
+    to: '/manufacturers',
+    exact: false
   },
   // 営業活動
   {
     label: '営業活動',
     icon: 'i-lucide-activity',
-    to: '/activities'
+    to: '/activities',
+    exact: false
   },
   // FAX送信履歴
   {
     label: '送信履歴',
     icon: 'i-lucide-send',
-    to: '/communications'
+    to: '/communications',
+    exact: false
   },
   {
     // setting
     label: '設定',
     to: '/settings',
-    icon: 'i-lucide-settings'
+    icon: 'i-lucide-settings',
+    exact: false
   }
 ]
 
@@ -231,7 +237,13 @@ onMounted(async () => {
 
 <template>
   <UDashboardGroup unit="rem">
-    <UDashboardSidebar :default-size="5" class="">
+    <UDashboardSidebar
+      :default-size="2"
+      class=""
+      :ui="{
+        body: 'px-0'
+      }"
+    >
       <template #default="{ collapsed }">
         <UButton
           icon="i-material-symbols-menu"
@@ -249,7 +261,7 @@ onMounted(async () => {
           color="primary"
           variant="pill"
           :ui="{
-            list: 'space-y-2',
+            list: '',
             link: 'flex-col gap-1.5',
             linkLabel: 'block text-[10px]/3 text-center'
           }"

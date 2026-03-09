@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { SelectMenuItem } from '@nuxt/ui'
 
+const model = defineModel<string>({ default: '' })
+
 const items = ref([
   {
     label: '00705: 東京電力ホールディングス',
@@ -94,14 +96,22 @@ const items = ref([
   }
 ] satisfies SelectMenuItem[])
 
-const value = ref(items.value[0])
+const selected = computed({
+  get() {
+    return items.value.find(i => i.value === model.value) ?? null
+  },
+  set(item: SelectMenuItem | null) {
+    model.value = (item as any)?.value ?? ''
+  }
+})
 </script>
 
 <template>
   <USelectMenu
-    v-model="value"
-    :avatar="value?.avatar"
+    v-model="selected"
+    :avatar="selected?.avatar"
     :items="items"
+    placeholder="顧客を選択"
     class="w-48"
   />
 </template>

@@ -29,7 +29,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <UApp>
+  <UApp :locale="'ja-JP'">
     <NuxtLoadingIndicator />
 
     <NuxtLayout>

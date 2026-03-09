@@ -23,8 +23,41 @@ const emit = defineEmits<{
 
 const variant = computed(() => (props.active ? 'outline' : 'outline'))
 
+const expanded = ref(false)
+
+const FIELD_SPANS: Record<string, { normal: string, expanded: string }> = {
+  budgetQty: { normal: '', expanded: 'col-span-2' },
+  itemGroup: { normal: '', expanded: 'col-span-2' },
+  productCode: { normal: '', expanded: 'col-span-2' },
+  productName: { normal: 'col-span-4', expanded: 'col-span-4' },
+  sellingPrice: { normal: '', expanded: 'col-span-2' },
+  packQty: { normal: '', expanded: 'col-span-2' },
+  listPrice: { normal: '', expanded: 'col-span-2' },
+  budgetPrice: { normal: '', expanded: 'col-span-2' },
+  catalogName: { normal: '', expanded: 'col-span-2' },
+  catalogPage: { normal: '', expanded: 'col-span-2' },
+  manufacturerName: { normal: '', expanded: 'col-span-3' },
+  accountName: { normal: '', expanded: 'col-span-2' },
+  rfqType: { normal: '', expanded: 'col-span-2' },
+  requestDate: { normal: '', expanded: 'col-span-1' },
+  costPrice: { normal: '', expanded: 'col-span-2' },
+  sampleQty: { normal: '', expanded: 'col-span-2' },
+  arrivalDate: { normal: '', expanded: 'col-span-1' },
+  costNotes: { normal: 'col-span-5', expanded: 'col-span-5' },
+  deliveryNotes: { normal: 'col-span-3', expanded: 'col-span-5' },
+  adoptionType: { normal: '', expanded: 'col-span-4' },
+  contactDate: { normal: '', expanded: 'col-span-1' }
+}
+
+function spanClass(fieldKey: string) {
+  const cfg = FIELD_SPANS[fieldKey]
+  return cfg ? (expanded.value ? cfg.expanded : cfg.normal) : ''
+}
+
 function isHighlighted(fieldKey: string) {
-  return props.highlights.some(h => h.rowId === props.rowId && h.fieldKey === fieldKey)
+  return props.highlights.some(
+    h => h.rowId === props.rowId && h.fieldKey === fieldKey
+  )
 }
 
 function onFieldClick(fieldKey: string, e: MouseEvent) {
@@ -36,7 +69,14 @@ function onFieldClick(fieldKey: string, e: MouseEvent) {
 
 function formatDateTime(iso: string) {
   const d = new Date(iso)
-  return d.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
+  return d.toLocaleString('ja-JP', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })
 }
 </script>
 
@@ -44,13 +84,17 @@ function formatDateTime(iso: string) {
   <div
     :data-row-id="rowId"
     class="flex flex-col gap-2 group border rounded-md p-3 bg-white dark:bg-neutral-800 transition-colors"
-    :class="picking ? 'border-primary border-dashed cursor-pointer' : 'border-muted'"
+    :class="
+      picking ? 'border-primary border-dashed cursor-pointer' : 'border-muted'
+    "
   >
     <div class="flex flex-row gap-3 justify-between">
       <div class="flex items-center gap-2">
         <div
           class="w-6 h-6 flex items-center justify-center rounded-full text-xs font-semibold"
-          :class="updatedAt ? 'bg-primary text-white' : 'border border-accented'"
+          :class="
+            updatedAt ? 'bg-primary text-white' : 'border border-accented'
+          "
         >
           {{ no }}
         </div>
@@ -82,18 +126,33 @@ function formatDateTime(iso: string) {
           class="mt-2"
           @click.stop="emit('duplicate')"
         />
+        <UButton
+          :label="expanded ? '縮小' : '展開'"
+          color="neutral"
+          :icon="expanded ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2'"
+          variant="solid"
+          size="xs"
+          class="mt-2"
+          @click.stop="expanded = !expanded"
+        />
       </div>
     </div>
-    <div class="grid grid-cols-10 space-x-1">
+    <div class="grid grid-cols-10 space-x-1 space-y-2">
       <UFormField
         label="予算数"
         size="xs"
         data-field="budgetQty"
-        :class="[isHighlighted('budgetQty') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('budgetQty'),
+          isHighlighted('budgetQty')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('budgetQty', $event)"
       >
         <UInputNumber
           v-model="model.budgetQty"
+          class="w-full"
           :variant="variant"
           color="neutral"
           orientation="vertical"
@@ -103,20 +162,38 @@ function formatDateTime(iso: string) {
         label="品群"
         size="xs"
         data-field="itemGroup"
-        :class="[isHighlighted('itemGroup') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('itemGroup'),
+          isHighlighted('itemGroup')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('itemGroup', $event)"
       >
-        <ProposalsItemGroupSelect v-model="model.itemGroup" :variant="variant" class="w-full" />
+        <ProposalsItemGroupSelect
+          v-model="model.itemGroup"
+          :variant="variant"
+          class="w-full"
+        />
       </UFormField>
       <UFormField
         label="品番"
         size="xs"
         data-field="productCode"
-        :class="[isHighlighted('productCode') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('productCode'),
+          isHighlighted('productCode')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('productCode', $event)"
       >
         <div class="flex gap-0.5 w-full">
-          <UInput v-model="model.productCode" :variant="variant" class="flex-1" />
+          <UInput
+            v-model="model.productCode"
+            :variant="variant"
+            class="flex-1"
+          />
           <UButton
             icon="i-lucide-search"
             variant="outline"
@@ -130,9 +207,13 @@ function formatDateTime(iso: string) {
       <UFormField
         label="品名"
         size="xs"
-        class="col-span-4"
         data-field="productName"
-        :class="[isHighlighted('productName') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('productName'),
+          isHighlighted('productName')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('productName', $event)"
       >
         <UInput v-model="model.productName" :variant="variant" class="w-full" />
@@ -141,16 +222,30 @@ function formatDateTime(iso: string) {
         label="売上単価"
         size="xs"
         data-field="sellingPrice"
-        :class="[isHighlighted('sellingPrice') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('sellingPrice'),
+          isHighlighted('sellingPrice')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('sellingPrice', $event)"
       >
-        <UInput v-model="model.sellingPrice" :variant="variant" class="w-full" />
+        <UInput
+          v-model="model.sellingPrice"
+          :variant="variant"
+          class="w-full"
+        />
       </UFormField>
       <UFormField
         label="入数"
         size="xs"
         data-field="packQty"
-        :class="[isHighlighted('packQty') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('packQty'),
+          isHighlighted('packQty')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('packQty', $event)"
       >
         <UInput v-model="model.packQty" :variant="variant" class="w-full" />
@@ -159,22 +254,31 @@ function formatDateTime(iso: string) {
         label="定価"
         size="xs"
         data-field="listPrice"
-        :class="[isHighlighted('listPrice') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('listPrice'),
+          isHighlighted('listPrice')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('listPrice', $event)"
       >
         <UInput v-model="model.listPrice" :variant="variant" class="w-full" />
       </UFormField>
-    </div>
-    <div class="grid grid-cols-10 space-x-1">
       <UFormField
         label="予算単価"
         size="xs"
         data-field="budgetPrice"
-        :class="[isHighlighted('budgetPrice') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('budgetPrice'),
+          isHighlighted('budgetPrice')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('budgetPrice', $event)"
       >
         <UInputNumber
           v-model="model.budgetPrice"
+          class="w-full"
           :variant="variant"
           color="neutral"
           orientation="vertical"
@@ -184,25 +288,48 @@ function formatDateTime(iso: string) {
         label="カタログ名"
         size="xs"
         data-field="catalogName"
-        :class="[isHighlighted('catalogName') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('catalogName'),
+          isHighlighted('catalogName')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('catalogName', $event)"
       >
-        <ProposalsCatalogSelect v-model="model.catalogName" :variant="variant" class="w-full" />
+        <ProposalsCatalogSelect
+          v-model="model.catalogName"
+          :variant="variant"
+          class="w-full"
+        />
       </UFormField>
       <UFormField
         label="掲載ページ"
         size="xs"
         data-field="catalogPage"
-        :class="[isHighlighted('catalogPage') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('catalogPage'),
+          isHighlighted('catalogPage')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('catalogPage', $event)"
       >
-        <ProposalsCategorySelect v-model="model.catalogPage" :variant="variant" class="w-full" />
+        <ProposalsCategorySelect
+          v-model="model.catalogPage"
+          :variant="variant"
+          class="w-full"
+        />
       </UFormField>
       <UFormField
         label="メーカー名"
         size="xs"
         data-field="manufacturerName"
-        :class="[isHighlighted('manufacturerName') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('manufacturerName'),
+          isHighlighted('manufacturerName')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('manufacturerName', $event)"
       >
         <!-- <ProposalsManufacturerSelect v-model="model.manufacturerName" :variant="variant" /> -->
@@ -213,6 +340,9 @@ function formatDateTime(iso: string) {
           size="xs"
           class="w-full"
           :label="model.manufacturerName || '未指定'"
+          :ui="{
+            trailingIcon: 'ml-auto'
+          }"
           @click.stop="emit('openManufacturerSearch')"
         />
       </UFormField>
@@ -220,34 +350,62 @@ function formatDateTime(iso: string) {
         label="帳合先"
         size="xs"
         data-field="accountName"
-        :class="[isHighlighted('accountName') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('accountName'),
+          isHighlighted('accountName')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('accountName', $event)"
       >
-        <ProposalsAccountSelect v-model="model.accountName" :variant="variant" class="w-full" />
+        <ProposalsAccountSelect
+          v-model="model.accountName"
+          :variant="variant"
+          class="w-full"
+        />
       </UFormField>
       <UFormField
         label="見積依頼区分"
         size="xs"
         data-field="rfqType"
-        :class="[isHighlighted('rfqType') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('rfqType'),
+          isHighlighted('rfqType')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('rfqType', $event)"
       >
-        <ProposalsRfqTypeSelect v-model="model.rfqType" :variant="variant" class="w-full" />
+        <ProposalsRfqTypeSelect
+          v-model="model.rfqType"
+          :variant="variant"
+          class="w-full"
+        />
       </UFormField>
       <UFormField
         label="依頼日"
         size="xs"
         data-field="requestDate"
-        :class="[isHighlighted('requestDate') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('requestDate'),
+          isHighlighted('requestDate')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('requestDate', $event)"
       >
-        <UInput v-model="model.requestDate" :variant="variant" class="w-full" />
+        <CommonDatePicker v-model="model.requestDate" :variant="variant" />
       </UFormField>
       <UFormField
         label="原価"
         size="xs"
         data-field="costPrice"
-        :class="[isHighlighted('costPrice') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('costPrice'),
+          isHighlighted('costPrice')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('costPrice', $event)"
       >
         <UInput v-model="model.costPrice" :variant="variant" class="w-full" />
@@ -256,7 +414,12 @@ function formatDateTime(iso: string) {
         label="サンプル数"
         size="xs"
         data-field="sampleQty"
-        :class="[isHighlighted('sampleQty') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('sampleQty'),
+          isHighlighted('sampleQty')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('sampleQty', $event)"
       >
         <UInput v-model="model.sampleQty" :variant="variant" class="w-full" />
@@ -265,19 +428,26 @@ function formatDateTime(iso: string) {
         label="入荷日"
         size="xs"
         data-field="arrivalDate"
-        :class="[isHighlighted('arrivalDate') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('arrivalDate'),
+          isHighlighted('arrivalDate')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('arrivalDate', $event)"
       >
-        <UInput v-model="model.arrivalDate" :variant="variant" class="w-full" />
+        <CommonDatePicker v-model="model.arrivalDate" :variant="variant" />
       </UFormField>
-    </div>
-    <div class="grid grid-cols-10 space-x-1">
       <UFormField
         label="備考(原価明細他)"
         size="xs"
-        class="col-span-5"
         data-field="costNotes"
-        :class="[isHighlighted('costNotes') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('costNotes'),
+          isHighlighted('costNotes')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('costNotes', $event)"
       >
         <UInput v-model="model.costNotes" :variant="variant" class="w-full" />
@@ -285,30 +455,52 @@ function formatDateTime(iso: string) {
       <UFormField
         label="納期/備考"
         size="xs"
-        class="col-span-3"
         data-field="deliveryNotes"
-        :class="[isHighlighted('deliveryNotes') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('deliveryNotes'),
+          isHighlighted('deliveryNotes')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('deliveryNotes', $event)"
       >
-        <UInput v-model="model.deliveryNotes" :variant="variant" class="w-full" />
+        <UInput
+          v-model="model.deliveryNotes"
+          :variant="variant"
+          class="w-full"
+        />
       </UFormField>
       <UFormField
         label="採用区分"
         size="xs"
         data-field="adoptionType"
-        :class="[isHighlighted('adoptionType') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('adoptionType'),
+          isHighlighted('adoptionType')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('adoptionType', $event)"
       >
-        <UInput v-model="model.adoptionType" :variant="variant" class="w-full" />
+        <UInput
+          v-model="model.adoptionType"
+          :variant="variant"
+          class="w-full"
+        />
       </UFormField>
       <UFormField
         label="連絡日"
         size="xs"
         data-field="contactDate"
-        :class="[isHighlighted('contactDate') && 'ring ring-warning rounded-md bg-warning/10', picking && 'hover:bg-primary/10 cursor-pointer']"
+        :class="[
+          spanClass('contactDate'),
+          isHighlighted('contactDate')
+            && 'ring ring-warning rounded-md bg-warning/10',
+          picking && 'hover:bg-primary/10 cursor-pointer'
+        ]"
         @click="onFieldClick('contactDate', $event)"
       >
-        <UInput v-model="model.contactDate" :variant="variant" class="w-full" />
+        <CommonDatePicker v-model="model.contactDate" :variant="variant" />
       </UFormField>
     </div>
   </div>
