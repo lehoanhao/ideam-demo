@@ -8,6 +8,10 @@ export default defineNuxtConfig({
     '@pinia/nuxt'
   ],
 
+  colorMode: {
+    preference: 'light'
+  },
+
   ssr: false,
 
   devtools: {
