@@ -2,12 +2,13 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const route = useRoute()
-const sidebarCollapsed = ref(route.path === '/proposals/new')
-const showMenu = ref(route.path !== '/proposals/new')
+const isDetailPage = computed(() => route.path.startsWith('/proposals/d/'))
+const sidebarCollapsed = ref(isDetailPage.value)
+const showMenu = ref(!isDetailPage.value)
 watch(
   () => route.path,
   (path) => {
-    if (path === '/proposals/new') {
+    if (path.startsWith('/proposals/d/')) {
       sidebarCollapsed.value = true
       showMenu.value = false
     } else {
@@ -119,7 +120,7 @@ const labels = [
             'py-2': !collapsed,
             'w-7 h-7 px-0 text-center justify-center': collapsed
           }"
-          @click="$router.push('/proposals/new')"
+          @click="$router.push('/proposals/d/new')"
         >
           <span v-if="!collapsed">案件を作成</span>
         </UButton>

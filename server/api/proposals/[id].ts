@@ -1,27 +1,27 @@
-import type { Proposal } from '~/types'
+import { mockProposalFormData, allProposals } from './index'
 
-const mockProposals: Record<string, Proposal> = {}
+const updatedProposals: Record<string, any> = {}
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const method = event.method
 
   if (method === 'GET') {
-    if (mockProposals[id!]) return mockProposals[id!]
+    if (updatedProposals[id!]) return updatedProposals[id!]
 
-    const allProposalsList = await $fetch<{ data: Proposal[] }>('/api/proposals')
-    const found = allProposalsList.data.find(p => p.id === id)
+    const found = allProposals.find(p => p.id === id)
     if (!found) throw createError({ statusCode: 404, message: '提案が見つかりません' })
-    return found
+
+    const formData = mockProposalFormData[id!] || { formRows: [], rivals: [], notes: [], processHistory: [] }
+    return { ...found, ...formData }
   }
 
   if (method === 'PUT') {
     const body = await readBody(event)
-    const allProposalsList = await $fetch<{ data: Proposal[] }>('/api/proposals')
-    const idx = allProposalsList.data.findIndex(p => p.id === id)
-    if (idx === -1) throw createError({ statusCode: 404, message: '提案が見つかりません' })
-    const updated = { ...allProposalsList.data[idx], ...body, updatedAt: new Date().toISOString() }
-    mockProposals[id!] = updated
+    const found = allProposals.find(p => p.id === id)
+    if (!found) throw createError({ statusCode: 404, message: '提案が見つかりません' })
+    const updated = { ...found, ...body, updatedAt: new Date().toISOString() }
+    updatedProposals[id!] = updated
     return updated
   }
 

@@ -8,7 +8,7 @@ const { isNotificationsSlideoverOpen } = useDashboard()
 const items = [[{
   label: '新規提案',
   icon: 'i-lucide-file-plus',
-  to: '/proposals/new'
+  to: '/proposals/d/new'
 }, {
   label: '顧客追加',
   icon: 'i-lucide-user-plus',

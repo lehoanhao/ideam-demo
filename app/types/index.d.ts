@@ -99,7 +99,7 @@ export interface ManufacturerFilter {
 // PROPOSAL MANAGEMENT (提案管理) - CORE FEATURE
 // ============================================================================
 
-export type ProposalStatus = 'draft' | 'submitted' | 'quoted' | 'approved' | 'rejected' | 'completed' | 'archived'
+export type ProposalStatus = 'draft' | 'submitted' | 'quoted' | 'pricing' | 'pending_approval' | 'approved' | 'rejected' | 'completed' | 'confirming' | 'archived'
 
 export interface ProposalLineItem {
   id: string

@@ -23,11 +23,14 @@ onMounted(() => { proposalStore.fetchProposals() })
 
 const statusOptions = [
   { label: 'すべて', value: '' },
-  { label: '下書き', value: 'draft' },
-  { label: '提出済み', value: 'submitted' },
-  { label: '見積済み', value: 'quoted' },
-  { label: '承認済み', value: 'approved' },
-  { label: '却下', value: 'rejected' },
+  { label: '新規作成中', value: 'draft' },
+  { label: '仕入れ依頼中', value: 'submitted' },
+  { label: 'メーカー依頼中', value: 'quoted' },
+  { label: '仕入れ値段決定中', value: 'pricing' },
+  { label: '承認中', value: 'pending_approval' },
+  { label: '承認済', value: 'approved' },
+  { label: '差し戻し', value: 'rejected' },
+  { label: '顧客と確認中', value: 'confirming' },
   { label: '完了', value: 'completed' },
   { label: 'アーカイブ', value: 'archived' }
 ]
@@ -36,18 +39,24 @@ const statusColorMap: Record<ProposalStatus, string> = {
   draft: 'neutral',
   submitted: 'info',
   quoted: 'primary',
+  pricing: 'warning',
+  pending_approval: 'warning',
   approved: 'success',
   rejected: 'error',
+  confirming: 'info',
   completed: 'success',
   archived: 'neutral'
 }
 
 const statusLabelMap: Record<ProposalStatus, string> = {
-  draft: '下書き',
-  submitted: '提出済み',
-  quoted: '見積済み',
-  approved: '承認済み',
-  rejected: '却下',
+  draft: '新規作成中',
+  submitted: '仕入れ依頼中',
+  quoted: 'メーカー依頼中',
+  pricing: '仕入れ値段決定中',
+  pending_approval: '承認中',
+  approved: '承認済',
+  rejected: '差し戻し',
+  confirming: '顧客と確認中',
   completed: '完了',
   archived: 'アーカイブ'
 }
@@ -60,9 +69,9 @@ const filteredProposals = computed(() => {
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     list = list.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      p.code.toLowerCase().includes(q) ||
-      p.customerName.toLowerCase().includes(q)
+      p.title.toLowerCase().includes(q)
+      || p.code.toLowerCase().includes(q)
+      || p.customerName.toLowerCase().includes(q)
     )
   }
   if (statusFilter.value) {
@@ -77,7 +86,7 @@ function getRowItems(row: { original: Proposal }) {
     {
       label: '詳細を表示',
       icon: 'i-lucide-eye',
-      onSelect() { router.push(`/proposals/${row.original.id}`) }
+      onSelect() { router.push(`/proposals/d/${row.original.id}`) }
     },
     { type: 'separator' as const },
     {
@@ -125,7 +134,7 @@ const columns: TableColumn<Proposal>[] = [
     cell: ({ row }) =>
       h('a', {
         class: 'text-primary hover:underline cursor-pointer',
-        onClick: () => router.push(`/proposals/${row.original.id}`)
+        onClick: () => router.push(`/proposals/d/${row.original.id}`)
       }, row.original.title)
   },
   {
@@ -156,7 +165,7 @@ const columns: TableColumn<Proposal>[] = [
     id: 'actions',
     cell: ({ row }) =>
       h(UDropdownMenu, {
-        items: getRowItems(row),
+        'items': getRowItems(row),
         'aria-label': '操作メニュー'
       }, {
         default: () =>
@@ -179,7 +188,7 @@ const columns: TableColumn<Proposal>[] = [
           <UButton
             icon="i-lucide-plus"
             label="新規提案"
-            @click="router.push('/proposals/new')"
+            @click="router.push('/proposals/d/new')"
           />
         </template>
       </UDashboardNavbar>
