@@ -1,14 +1,23 @@
 <script setup lang="ts">
 defineProps<{
   collapsed?: boolean
+  variant?: 'default' | 'light'
 }>()
 </script>
 
 <template>
   <NuxtLink to="/" class="group flex items-center gap-2 px-0 py-0 font-bold select-none" :class="collapsed ? 'justify-center' : ''">
-    <div class="app-logo relative flex items-center justify-center size-10 rounded-xl overflow-hidden shrink-0 transition-all duration-300 group-hover:scale-110">
+    <div
+      class="relative flex items-center justify-center size-10 rounded-xl overflow-hidden shrink-0 transition-all duration-300 group-hover:scale-110"
+      :class="variant === 'light' ? 'app-logo-light' : 'app-logo'"
+    >
       <!-- Background gradient -->
-      <div class="absolute inset-0 bg-gradient-to-br from-primary-400 via-primary-600 to-primary-800" />
+      <div
+        class="absolute inset-0"
+        :class="variant === 'light'
+          ? 'bg-gradient-to-br from-white/20 via-white/10 to-white/5 border border-white/25'
+          : 'bg-gradient-to-br from-primary-400 via-primary-600 to-primary-800'"
+      />
 
       <!-- Animated network mesh SVG -->
       <svg class="network-svg absolute inset-0 w-full h-full" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -148,7 +157,35 @@ defineProps<{
   50% { box-shadow: 0 4px 22px rgba(var(--color-primary-500), 0.55); }
 }
 
+.app-logo-light {
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.15);
+  animation: logo-glow-light 3s ease-in-out infinite;
+  backdrop-filter: blur(8px);
+  border-radius: 0.75rem;
+}
+
+.app-logo-light:hover {
+  box-shadow: 0 4px 24px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes logo-glow-light {
+  0%, 100% { box-shadow: 0 4px 16px rgba(255, 255, 255, 0.15); }
+  50% { box-shadow: 0 4px 22px rgba(255, 255, 255, 0.3); }
+}
+
 /* Network lines */
+.app-logo-light .net-line {
+  stroke: rgba(255, 255, 255, 0.5);
+}
+.app-logo-light .net-node {
+  fill: rgba(255, 255, 255, 0.95);
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
+}
+.app-logo-light .pulse-dot {
+  fill: rgba(255, 255, 255, 1);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.9));
+}
+
 .net-line {
   stroke: rgba(255, 255, 255, 0.3);
   stroke-width: 0.6;

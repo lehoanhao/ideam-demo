@@ -1,15 +1,21 @@
 <script setup lang="ts">
 defineProps<{
   collapsed?: boolean
+  variant?: 'default' | 'light'
 }>()
 </script>
 
 <template>
   <div class="mt-2 text-xl tracking-tight font-bold truncate transition-all duration-300" :class="collapsed ? 'hidden' : ''" v-bind="$attrs">
-    <span class="app-title bg-gradient-to-r from-primary-500 via-primary-400 to-primary-600 bg-clip-text text-transparent">
+    <span
+      class="app-title bg-clip-text text-transparent bg-gradient-to-r"
+      :class="variant === 'light'
+        ? 'from-white via-blue-100 to-white'
+        : 'from-primary-500 via-primary-400 to-primary-600'"
+    >
       iDeam
     </span>
-    <span class="text-highlighted/70 font-semibold"> Systems</span>
+    <span :class="variant === 'light' ? 'text-white/80' : 'text-highlighted/70'" class="font-semibold"> Systems</span>
   </div>
 </template>
 
