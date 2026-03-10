@@ -5,92 +5,92 @@ const model = defineModel<string>({ default: '' })
 
 const items = ref([
   {
-    label: '00705: 東京電力ホールディングス',
-    value: '00705',
+    label: 'C001: サンプル銀行',
+    value: 'cust_001',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=TEPCO&background=0D6EFD&color=fff&size=128',
-      alt: '東京電力ホールディングス',
+      src: 'https://ui-avatars.com/api/?name=SB&background=0D6EFD&color=fff&size=128',
+      alt: 'サンプル銀行',
       loading: 'lazy' as const
     }
   },
   {
-    label: '01023: トヨタ自動車株式会社',
-    value: '01023',
+    label: 'C002: テスト信用金庫',
+    value: 'cust_002',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=Toyota&background=EB0A1E&color=fff&size=128',
-      alt: 'トヨタ自動車株式会社',
+      src: 'https://ui-avatars.com/api/?name=TSK&background=2E7D32&color=fff&size=128',
+      alt: 'テスト信用金庫',
       loading: 'lazy' as const
     }
   },
   {
-    label: '01548: ソニーグループ株式会社',
-    value: '01548',
+    label: 'C003: ダミーファイナンス銀行',
+    value: 'cust_003',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=Sony&background=000000&color=fff&size=128',
-      alt: 'ソニーグループ株式会社',
+      src: 'https://ui-avatars.com/api/?name=DF&background=6A1B9A&color=fff&size=128',
+      alt: 'ダミーファイナンス銀行',
       loading: 'lazy' as const
     }
   },
   {
-    label: '02101: パナソニック株式会社',
-    value: '02101',
+    label: 'C004: 仮想第一銀行',
+    value: 'cust_004',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=Panasonic&background=0053A0&color=fff&size=128',
-      alt: 'パナソニック株式会社',
+      src: 'https://ui-avatars.com/api/?name=KD&background=E65100&color=fff&size=128',
+      alt: '仮想第一銀行',
       loading: 'lazy' as const
     }
   },
   {
-    label: '02876: 日立製作所',
-    value: '02876',
+    label: 'C005: モック資産銀行',
+    value: 'cust_005',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=Hitachi&background=E60012&color=fff&size=128',
-      alt: '日立製作所',
+      src: 'https://ui-avatars.com/api/?name=MS&background=00838F&color=fff&size=128',
+      alt: 'モック資産銀行',
       loading: 'lazy' as const
     }
   },
   {
-    label: '03412: 三菱商事株式会社',
-    value: '03412',
+    label: 'C006: 開発信用銀行',
+    value: 'cust_006',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=Mitsubishi&background=CC0000&color=fff&size=128',
-      alt: '三菱商事株式会社',
+      src: 'https://ui-avatars.com/api/?name=KS&background=C62828&color=fff&size=128',
+      alt: '開発信用銀行',
       loading: 'lazy' as const
     }
   },
   {
-    label: '04089: 富士通株式会社',
-    value: '04089',
+    label: 'C007: テストデータバンク',
+    value: 'cust_007',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=Fujitsu&background=E4002B&color=fff&size=128',
-      alt: '富士通株式会社',
+      src: 'https://ui-avatars.com/api/?name=TD&background=283593&color=fff&size=128',
+      alt: 'テストデータバンク',
       loading: 'lazy' as const
     }
   },
   {
-    label: '04530: NTTデータグループ',
-    value: '04530',
+    label: 'C008: ダミー中央銀行',
+    value: 'cust_008',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=NTT&background=0078D4&color=fff&size=128',
-      alt: 'NTTデータグループ',
+      src: 'https://ui-avatars.com/api/?name=DC&background=004D40&color=fff&size=128',
+      alt: 'ダミー中央銀行',
       loading: 'lazy' as const
     }
   },
   {
-    label: '05217: 任天堂株式会社',
-    value: '05217',
+    label: 'C009: 開発ファイナンス銀行',
+    value: 'cust_009',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=Nintendo&background=E60012&color=fff&size=128',
-      alt: '任天堂株式会社',
+      src: 'https://ui-avatars.com/api/?name=KF&background=AD1457&color=fff&size=128',
+      alt: '開発ファイナンス銀行',
       loading: 'lazy' as const
     }
   },
   {
-    label: '05943: 楽天グループ株式会社',
-    value: '05943',
+    label: 'C010: テストバンク',
+    value: 'cust_010',
     avatar: {
-      src: 'https://ui-avatars.com/api/?name=Rakuten&background=BF0000&color=fff&size=128',
-      alt: '楽天グループ株式会社',
+      src: 'https://ui-avatars.com/api/?name=TB&background=0078D4&color=fff&size=128',
+      alt: 'テストバンク',
       loading: 'lazy' as const
     }
   }
