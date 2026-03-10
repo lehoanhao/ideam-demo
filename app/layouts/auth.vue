@@ -39,7 +39,7 @@
         >
           <AppLogo :collapsed="true" />
         </div>
-        <span class="text-xl font-bold tracking-tight">iDeam Systems</span>
+        <AppTitle :collapsed="false" />
       </div>
 
       <!-- Feature highlights -->
@@ -129,20 +129,20 @@
           <div
             v-for="item in features"
             :key="item.label"
-            class="relative z-10 flex items-start gap-3 rounded-xl backdrop-blur-sm border p-3"
+            class="feature-card relative z-10 flex items-start gap-3 rounded-xl backdrop-blur-sm border p-3 cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:-translate-y-1 hover:shadow-lg hover:shadow-white/10 hover:border-white/30"
             :class="item.cardClass"
           >
             <div
-              class="flex items-center justify-center size-8 rounded-lg shrink-0 mt-0.5"
+              class="flex items-center justify-center size-8 rounded-lg shrink-0 mt-0.5 transition-all duration-300"
               :class="item.iconClass"
             >
-              <UIcon :name="item.icon" size="sm" />
+              <UIcon :name="item.icon" size="sm" class="transition-transform duration-300" />
             </div>
             <div>
-              <p class="text-sm font-semibold">
+              <p class="text-sm font-semibold transition-colors duration-300">
                 {{ item.label }}
               </p>
-              <p class="text-xs mt-0.5" :class="item.descClass">
+              <p class="text-xs mt-0.5 transition-colors duration-300" :class="item.descClass">
                 {{ item.desc }}
               </p>
             </div>
@@ -204,3 +204,23 @@ const features = [
   }
 ]
 </script>
+
+<style scoped>
+.feature-card {
+  will-change: transform;
+}
+
+.feature-card:hover {
+  backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.feature-card:hover .size-8 {
+  transform: scale(1.15);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+}
+
+.feature-card:hover :deep(.iconify) {
+  transform: rotate(-8deg) scale(1.1);
+}
+</style>

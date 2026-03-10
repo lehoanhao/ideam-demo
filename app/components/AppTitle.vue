@@ -5,7 +5,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="mt-2 text-xl tracking-tight font-bold truncate transition-all duration-300" :class="collapsed ? 'hidden' : ''">
+  <div class="mt-2 text-xl tracking-tight font-bold truncate transition-all duration-300" :class="collapsed ? 'hidden' : ''" v-bind="$attrs">
     <span class="app-title bg-gradient-to-r from-primary-500 via-primary-400 to-primary-600 bg-clip-text text-transparent">
       iDeam
     </span>
