@@ -1,21 +1,43 @@
 <template>
   <div class="h-screen flex overflow-hidden">
     <!-- Left panel — branding & decoration -->
-    <div class="hidden lg:flex lg:w-1/2 relative bg-linear-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-800 dark:via-blue-900 dark:to-indigo-950 text-white flex-col justify-between p-12 overflow-hidden">
+    <div
+      class="hidden lg:flex lg:w-1/2 relative bg-linear-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-800 dark:via-blue-900 dark:to-indigo-950 text-white flex-col justify-between p-12 overflow-hidden"
+    >
       <!-- Animated grid background -->
       <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255,255,255,.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.15) 1px, transparent 1px); background-size: 40px 40px;" />
+        <div
+          class="absolute inset-0"
+          style="
+            background-image:
+              linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+              linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.15) 1px,
+                transparent 1px
+              );
+            background-size: 40px 40px;
+          "
+        />
       </div>
 
       <!-- Floating accent shapes -->
-      <div class="absolute -top-20 -left-20 size-72 rounded-full bg-white/5 blur-3xl animate-pulse" />
-      <div class="absolute top-1/3 -right-16 size-56 rounded-full bg-indigo-400/10 blur-2xl animate-pulse [animation-delay:2s]" />
-      <div class="absolute -bottom-24 left-1/4 size-64 rounded-full bg-sky-300/10 blur-3xl animate-pulse [animation-delay:4s]" />
+      <div
+        class="absolute -top-20 -left-20 size-72 rounded-full bg-white/5 blur-3xl animate-pulse"
+      />
+      <div
+        class="absolute top-1/3 -right-16 size-56 rounded-full bg-indigo-400/10 blur-2xl animate-pulse [animation-delay:2s]"
+      />
+      <div
+        class="absolute -bottom-24 left-1/4 size-64 rounded-full bg-sky-300/10 blur-3xl animate-pulse [animation-delay:4s]"
+      />
 
       <!-- Logo -->
       <div class="relative z-10 flex items-center gap-3">
-        <div class="flex items-center justify-center size-10 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20">
-          <UIcon name="i-lucide-rocket" size="md" />
+        <div
+          class="flex items-center justify-center size-10 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20"
+        >
+          <AppLogo :collapsed="true" />
         </div>
         <span class="text-xl font-bold tracking-tight">iDeam Systems</span>
       </div>
@@ -130,12 +152,15 @@
 
       <!-- Bottom tagline -->
       <p class="relative z-10 text-xs text-blue-200">
-        &copy; {{ new Date().getFullYear() }} iDeam Systems — 統合業務管理プラットフォーム
+        &copy; {{ new Date().getFullYear() }} iDeam Systems —
+        統合業務管理プラットフォーム
       </p>
     </div>
 
     <!-- Right panel — form -->
-    <div class="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-6">
+    <div
+      class="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-6"
+    >
       <div class="w-full max-w-sm">
         <slot />
       </div>
