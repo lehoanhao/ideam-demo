@@ -14,6 +14,15 @@ onMounted(async () => {
 })
 
 const open = ref(false)
+const showAnnouncements = ref(false)
+
+onMounted(() => {
+  const seen = sessionStorage.getItem('announcements-seen')
+  if (!seen) {
+    showAnnouncements.value = true
+    sessionStorage.setItem('announcements-seen', '1')
+  }
+})
 
 const mainLinks = computed(() => {
   return [
@@ -207,6 +216,7 @@ onMounted(async () => {
 
     <slot />
 
+    <AnnouncementsModal v-model:open="showAnnouncements" />
     <NotificationsSlideover />
   </UDashboardGroup>
 </template>
