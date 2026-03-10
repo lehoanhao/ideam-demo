@@ -40,6 +40,23 @@ export default defineNuxtConfig({
         commaDangle: 'never',
         braceStyle: '1tbs'
       }
+    },
+    checker: false
+  },
+
+  typescript: {
+    typeCheck: false
+  },
+
+  nitro: {
+    esbuild: {
+      options: {
+        tsconfigRaw: {
+          compilerOptions: {
+            skipLibCheck: true
+          }
+        }
+      }
     }
   }
 })

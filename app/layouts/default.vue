@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
 import { useAuthStore } from '~/stores/auth'
 
 const route = useRoute()
@@ -13,7 +12,7 @@ onMounted(async () => {
   }
 })
 
-const open = ref(false)
+const _open = ref(false)
 const showAnnouncements = ref(false)
 
 onMounted(() => {
@@ -32,8 +31,8 @@ const mainLinks = computed(() => {
       to: '/proposals',
       exact: false,
       chip: {
-        color: 'error',
-        size: 'md'
+        color: 'error' as const,
+        size: 'md' as const
       },
       color: 'blue'
     },
@@ -168,7 +167,7 @@ onMounted(async () => {
           </template>
         </UNavigationMenu>
       </template>
-      <template #footer="{ collapsed }">
+      <template #footer>
         <div class="flex flex-col items-center gap-2">
           <UChip color="error" :show="true" inset>
             <UButton
