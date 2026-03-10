@@ -213,54 +213,84 @@ const sidebarTitle = computed(() =>
           <UIcon name="i-lucide-loader-circle" class="w-8 h-8 animate-spin text-muted" />
         </div>
 
-        <div v-else-if="isNew || mfr" class="max-w-3xl mx-auto px-4 pb-8 space-y-4">
+        <div v-else-if="isNew || mfr" class="max-w-3xl mx-auto px-4 pb-8">
           <!-- 基本情報 -->
-          <UPageCard title="基本情報" variant="subtle">
-            <div class="space-y-4">
-              <UFormField label="メーカー名" required class="flex max-sm:flex-col justify-between items-start gap-4">
-                <UInput v-model="editState.name" placeholder="メーカー名" autocomplete="off" />
-              </UFormField>
-              <USeparator />
-              <UFormField label="ふりがな" class="flex max-sm:flex-col justify-between items-start gap-4">
-                <UInput v-model="editState.furigana" placeholder="ふりがな" autocomplete="off" />
-              </UFormField>
-              <USeparator />
-              <UFormField label="備考" class="flex max-sm:flex-col justify-between items-start gap-4" :ui="{ container: 'w-full' }">
-                <UTextarea
-                  v-model="editState.notes"
-                  :rows="3"
-                  autoresize
-                  class="w-full"
-                  placeholder="メモを入力..."
-                />
-              </UFormField>
-            </div>
+          <UPageCard title="基本情報" variant="subtle" class="mb-4">
+            <UFormField
+              label="メーカー名"
+              description="メーカーの正式名称を入力してください。"
+              required
+              class="gap-1 w-full"
+            >
+              <UInput v-model="editState.name" class="w-full" placeholder="メーカー名" autocomplete="off" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="ふりがな"
+              description="メーカー名のふりがなを入力してください。"
+              class="gap-1"
+            >
+              <UInput v-model="editState.furigana" class="w-full" placeholder="ふりがな" autocomplete="off" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="備考"
+              description="メーカーに関するメモを入力できます。"
+              class="gap-1"
+              :ui="{ container: 'w-full' }"
+            >
+              <UTextarea
+                v-model="editState.notes"
+                :rows="3"
+                autoresize
+                class="w-full"
+                placeholder="メモを入力..."
+              />
+            </UFormField>
           </UPageCard>
 
           <!-- 連絡先 -->
-          <UPageCard title="連絡先情報" variant="subtle">
-            <div class="space-y-4">
-              <UFormField label="メールアドレス" class="flex max-sm:flex-col justify-between items-start gap-4">
-                <UInput v-model="editState.contactEmail" placeholder="example@mail.com" />
-              </UFormField>
-              <USeparator />
-              <UFormField label="電話番号" class="flex max-sm:flex-col justify-between items-start gap-4">
-                <UInput v-model="editState.contactPhone" placeholder="03-XXXX-XXXX" />
-              </UFormField>
-              <USeparator />
-              <UFormField label="FAX番号" class="flex max-sm:flex-col justify-between items-start gap-4">
-                <UInput v-model="editState.faxNumber" placeholder="FAX番号" />
-              </UFormField>
-              <USeparator />
-              <UFormField label="優先連絡方法" class="flex max-sm:flex-col justify-between items-start gap-4">
-                <USelectMenu v-model="editState.preferredContactMethod" :items="contactMethodOptions" value-key="value" />
-              </UFormField>
-            </div>
+          <UPageCard title="連絡先情報" variant="subtle" class="mb-4">
+            <UFormField
+              label="メールアドレス"
+              description="メーカーの連絡用メールアドレスを入力してください。"
+              class="gap-1"
+            >
+              <UInput v-model="editState.contactEmail" class="w-full" placeholder="example@mail.com" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="電話番号"
+              description="メーカーの電話番号を入力してください。"
+              class="gap-1"
+            >
+              <UInput v-model="editState.contactPhone" class="w-full" placeholder="03-XXXX-XXXX" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="FAX番号"
+              description="メーカーのFAX番号を入力してください。"
+              class="gap-1"
+            >
+              <UInput v-model="editState.faxNumber" class="w-full" placeholder="FAX番号" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="優先連絡方法"
+              description="優先する連絡方法を選択してください。"
+              class="gap-1"
+            >
+              <USelectMenu v-model="editState.preferredContactMethod" :items="contactMethodOptions" value-key="value" />
+            </UFormField>
           </UPageCard>
 
           <!-- タグ -->
-          <UPageCard title="タグ" variant="subtle">
-            <UFormField label="タグ" description="メーカーを分類するタグを追加できます。" class="flex max-sm:flex-col justify-between items-start gap-4">
+          <UPageCard title="タグ" variant="subtle" class="mb-4">
+            <UFormField
+              label="タグ"
+              description="メーカーを分類するタグを追加できます。"
+              class="gap-1"
+            >
               <div class="w-full space-y-2">
                 <div class="flex gap-2">
                   <UInput
@@ -293,8 +323,12 @@ const sidebarTitle = computed(() =>
           </UPageCard>
 
           <!-- 商品カテゴリ -->
-          <UPageCard title="商品カテゴリ" variant="subtle">
-            <UFormField label="カテゴリ" description="取り扱い商品カテゴリを追加できます。" class="flex max-sm:flex-col justify-between items-start gap-4">
+          <UPageCard title="商品カテゴリ" variant="subtle" class="mb-4">
+            <UFormField
+              label="カテゴリ"
+              description="取り扱い商品カテゴリを追加できます。"
+              class="gap-1"
+            >
               <div class="w-full space-y-2">
                 <div class="flex gap-2">
                   <UInput

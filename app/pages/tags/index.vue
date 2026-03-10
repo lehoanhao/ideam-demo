@@ -39,7 +39,6 @@ const categoryColorMap: Record<TagCategory, string> = {
 }
 
 const categoryOptions = [
-  { label: 'すべて', value: '' },
   { label: '顧客', value: 'customer' },
   { label: 'メーカー', value: 'manufacturer' },
   { label: '提案', value: 'proposal' },

@@ -58,7 +58,6 @@ const newAccount = reactive({
 })
 
 const roleFilterOptions = [
-  { label: 'すべて', value: '' },
   ...roleOptions
 ]
 

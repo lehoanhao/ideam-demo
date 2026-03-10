@@ -65,7 +65,6 @@ function resetAdvancedSearch() {
 }
 
 const contactMethodOptions = [
-  { label: 'すべて', value: '' },
   { label: 'メール', value: 'email' },
   { label: 'FAX', value: 'fax' },
   { label: '電話', value: 'phone' }

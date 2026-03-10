@@ -186,53 +186,103 @@ const sidebarTitle = computed(() =>
           <UIcon name="i-lucide-loader-circle" class="w-8 h-8 animate-spin text-muted" />
         </div>
 
-        <div v-else class="max-w-3xl mx-auto px-4 pb-8 space-y-4">
+        <div v-else class="max-w-3xl mx-auto px-4 pb-8">
           <!-- 基本情報 -->
-          <UPageCard title="基本情報" variant="subtle">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormField label="タイトル" required>
-                <UInput v-model="form.title" placeholder="活動タイトル" />
-              </UFormField>
-              <UFormField label="顧客名">
-                <UInput v-model="form.customerName" placeholder="顧客名" />
-              </UFormField>
-              <UFormField label="種類">
-                <USelectMenu v-model="form.type" :items="typeOptions" value-key="value" />
-              </UFormField>
-              <UFormField label="ステータス">
-                <USelectMenu v-model="form.status" :items="statusOptions" value-key="value" />
-              </UFormField>
-              <UFormField label="活動日">
-                <UInput v-model="form.activityDate" type="date" />
-              </UFormField>
-              <UFormField label="担当者">
-                <UInput v-model="form.assignedToName" placeholder="担当者名" />
-              </UFormField>
-              <UFormField label="窓口担当">
-                <UInput v-model="form.contactPerson" placeholder="顧客側の窓口" />
-              </UFormField>
-              <UFormField label="意欲レベル">
-                <USelectMenu v-model="form.interestLevel" :items="interestOptions" value-key="value" />
-              </UFormField>
-            </div>
-            <div v-if="form.proposalCode" class="mt-4">
-              <UFormField label="紐付け案件">
+          <UPageCard title="基本情報" variant="subtle" class="mb-4">
+            <UFormField
+              label="タイトル"
+              description="営業活動のタイトルを入力してください。"
+              required
+              class="gap-1 w-full"
+            >
+              <UInput v-model="form.title" class="w-full" placeholder="活動タイトル" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="顧客名"
+              description="対象の顧客名を入力してください。"
+              class="gap-1"
+            >
+              <UInput v-model="form.customerName" class="w-full" placeholder="顧客名" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="種類"
+              description="営業活動の種類を選択してください。"
+              class="gap-1"
+            >
+              <USelectMenu v-model="form.type" :items="typeOptions" value-key="value" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="ステータス"
+              description="現在のステータスを選択してください。"
+              class="gap-1"
+            >
+              <USelectMenu v-model="form.status" :items="statusOptions" value-key="value" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="活動日"
+              description="営業活動の実施日を入力してください。"
+              class="gap-1"
+            >
+              <UInput v-model="form.activityDate" class="w-full" type="date" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="担当者"
+              description="営業担当者名を入力してください。"
+              class="gap-1"
+            >
+              <UInput v-model="form.assignedToName" class="w-full" placeholder="担当者名" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="窓口担当"
+              description="顧客側の窓口担当者を入力してください。"
+              class="gap-1"
+            >
+              <UInput v-model="form.contactPerson" class="w-full" placeholder="顧客側の窓口" />
+            </UFormField>
+            <USeparator />
+            <UFormField
+              label="意欲レベル"
+              description="顧客の意欲レベルを選択してください。"
+              class="gap-1"
+            >
+              <USelectMenu v-model="form.interestLevel" :items="interestOptions" value-key="value" />
+            </UFormField>
+            <template v-if="form.proposalCode">
+              <USeparator />
+              <UFormField
+                label="紐付け案件"
+                description="関連する提案案件です。"
+                class="gap-1"
+              >
                 <UButton variant="link" class="p-0" @click="router.push(`/proposals/d/${form.proposalId}`)">
                   {{ form.proposalCode }}
                 </UButton>
               </UFormField>
-            </div>
+            </template>
           </UPageCard>
 
           <!-- 活動内容 -->
-          <UPageCard title="活動内容" variant="subtle">
-            <UTextarea
-              v-model="form.description"
-              placeholder="活動の詳細を入力..."
-              :rows="4"
-              autoresize
-              class="w-full"
-            />
+          <UPageCard title="活動内容" variant="subtle" class="mb-4">
+            <UFormField
+              label="活動内容"
+              description="営業活動の詳細を入力してください。"
+              class="gap-1"
+              :ui="{ container: 'w-full' }"
+            >
+              <UTextarea
+                v-model="form.description"
+                placeholder="活動の詳細を入力..."
+                :rows="4"
+                autoresize
+                class="w-full"
+              />
+            </UFormField>
           </UPageCard>
         </div>
       </div>

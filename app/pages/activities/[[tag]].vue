@@ -80,7 +80,6 @@ function resetAdvancedSearch() {
 }
 
 const statusOptions = [
-  { label: 'すべて', value: '' },
   { label: '予定', value: 'planned' },
   { label: '進行中', value: 'in_progress' },
   { label: '完了', value: 'completed' },
@@ -88,7 +87,6 @@ const statusOptions = [
 ]
 
 const interestLevelOptions = [
-  { label: 'すべて', value: '' },
   { label: '高', value: 'high' },
   { label: '中', value: 'medium' },
   { label: '低', value: 'low' }
@@ -130,7 +128,6 @@ const typeIconMap: Record<SalesActivityType, string> = {
 }
 
 const typeOptions = [
-  { label: 'すべて', value: '' },
   { label: '訪問', value: 'visit' },
   { label: '電話', value: 'phone' },
   { label: 'メール', value: 'email' },

@@ -49,7 +49,6 @@ const channelLabelMap: Record<string, string> = {
 }
 
 const statusOptions = [
-  { label: 'すべて', value: '' },
   ...Object.entries(statusLabelMap).map(([value, label]) => ({ label, value }))
 ]
 

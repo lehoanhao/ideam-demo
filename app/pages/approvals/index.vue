@@ -24,7 +24,6 @@ const rejectReason = ref('')
 onMounted(() => { approvalsStore.fetchApprovals() })
 
 const statusOptions = [
-  { label: 'すべて', value: '' },
   { label: '承認待ち', value: 'pending' },
   { label: '承認済み', value: 'approved' },
   { label: '否認', value: 'rejected' }
