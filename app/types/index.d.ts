@@ -296,6 +296,17 @@ export interface ApprovalRequest {
 export type SalesActivityStatus = 'planned' | 'in_progress' | 'completed' | 'cancelled'
 export type SalesActivityType = 'visit' | 'phone' | 'email' | 'meeting' | 'other'
 
+export interface SalesActivityAttachment {
+  id: string
+  name: string
+  url: string
+  type: 'image' | 'document' | 'other'
+  size: number
+  uploadedBy: string
+  uploadedByName: string
+  uploadedAt: string
+}
+
 export interface SalesActivity {
   id: string
   code: string
@@ -313,6 +324,7 @@ export interface SalesActivity {
   interestLevel?: 'high' | 'medium' | 'low'
   activityDate: string
   tags: string[]
+  attachments?: SalesActivityAttachment[]
   comments?: SalesActivityComment[]
   createdAt: string
   updatedAt: string
@@ -323,6 +335,7 @@ export interface SalesActivityComment {
   userId: string
   userName: string
   content: string
+  mentions?: string[]
   createdAt: string
 }
 

@@ -367,8 +367,18 @@ export const mockActivities: SalesActivity[] = [
     description: '総代会向け記念品の要望ヒアリング。予算400万円、4000個の見込み。食品・菓子系を中心に提案希望。',
     contactPerson: '山田太郎', interestLevel: 'high', activityDate: '2026-03-01',
     tags: ['新規訪問', '記念品'],
-    comments: [{ id: 'c1', userId: 'user_001', userName: '加藤 誠', content: '顧客は食品系に強い関心あり。次回は具体的なサンプルを持参予定。', createdAt: '2026-03-01T17:00:00Z' }],
-    createdAt: '2026-03-01T09:00:00Z', updatedAt: '2026-03-01T17:00:00Z'
+    attachments: [
+      { id: 'att_001', name: '提案書_総代会記念品_v1.pdf', url: '#', type: 'document', size: 245000, uploadedBy: 'user_001', uploadedByName: '加藤 誠', uploadedAt: '2026-03-01T10:00:00Z' },
+      { id: 'att_002', name: '記念品サンプル写真.jpg', url: 'https://picsum.photos/seed/sample1/800/600', type: 'image', size: 1200000, uploadedBy: 'user_001', uploadedByName: '加藤 誠', uploadedAt: '2026-03-01T11:30:00Z' },
+      { id: 'att_003', name: '見積もり一覧.xlsx', url: '#', type: 'document', size: 89000, uploadedBy: 'user_001', uploadedByName: '加藤 誠', uploadedAt: '2026-03-01T14:00:00Z' },
+      { id: 'att_004', name: '会議室写真.png', url: 'https://picsum.photos/seed/sample2/800/600', type: 'image', size: 950000, uploadedBy: 'user_001', uploadedByName: '加藤 誠', uploadedAt: '2026-03-01T15:00:00Z' }
+    ],
+    comments: [
+      { id: 'c1', userId: 'user_001', userName: '加藤 誠', content: '顧客は食品系に強い関心あり。次回は具体的なサンプルを持参予定。', createdAt: '2026-03-01T17:00:00Z' },
+      { id: 'c2', userId: 'user_002', userName: '鈴木 花子', content: '@加藤 誠 了解しました。サンプルの手配を進めます。カタログも一緒に送りましょうか？', createdAt: '2026-03-01T18:30:00Z' },
+      { id: 'c3', userId: 'user_001', userName: '加藤 誠', content: 'はい、お願いします。特に食品カテゴリのカタログを中心にお願いします。', createdAt: '2026-03-02T09:00:00Z' }
+    ],
+    createdAt: '2026-03-01T09:00:00Z', updatedAt: '2026-03-02T09:00:00Z'
   },
   {
     id: 'act_002', code: 'SA2026-002', customerId: 'cust_002', customerName: 'テクノロジー株式会社',
@@ -384,7 +394,12 @@ export const mockActivities: SalesActivity[] = [
     type: 'visit', status: 'in_progress', title: '夏季ギフト打ち合わせ',
     description: 'お中元期間の社員向けギフト提案。カタログギフト中心で検討中。',
     contactPerson: '高橋三郎', interestLevel: 'high', activityDate: '2026-03-05',
-    tags: ['新規訪問', 'ギフト'], createdAt: '2026-03-04T14:00:00Z', updatedAt: '2026-03-05T09:00:00Z'
+    tags: ['新規訪問', 'ギフト'],
+    attachments: [
+      { id: 'att_005', name: 'カタログギフト提案資料.pdf', url: '#', type: 'document', size: 520000, uploadedBy: 'user_001', uploadedByName: '加藤 誠', uploadedAt: '2026-03-04T15:00:00Z' },
+      { id: 'att_006', name: 'ギフトサンプル写真.jpg', url: 'https://picsum.photos/seed/sample3/800/600', type: 'image', size: 780000, uploadedBy: 'user_001', uploadedByName: '加藤 誠', uploadedAt: '2026-03-05T08:00:00Z' }
+    ],
+    createdAt: '2026-03-04T14:00:00Z', updatedAt: '2026-03-05T09:00:00Z'
   },
   {
     id: 'act_004', code: 'SA2026-004', customerId: 'cust_001', customerName: '株式会社テスト産業',
