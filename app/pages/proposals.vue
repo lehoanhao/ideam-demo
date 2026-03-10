@@ -66,7 +66,7 @@ const links = [
   }
 ] satisfies NavigationMenuItem[]
 
-const labels = [
+const tags = [
   {
     label: '大切な案件',
     color: 'warning'
@@ -130,12 +130,12 @@ const labels = [
         <div>
           <USeparator class="mt-2" />
           <small v-if="!collapsed" class="px-2 text-xs text-muted">
-            ラベル
+            タグ
           </small>
         </div>
         <UNavigationMenu
           :collapsed="collapsed"
-          :items="labels"
+          :items="tags"
           orientation="vertical"
           tooltip
           popover
@@ -148,7 +148,7 @@ const labels = [
           icon="i-ei-plus"
           color="neutral"
           variant="soft"
-          label="ラベルを追加"
+          label="タグを追加"
           size="sm"
           class="mt-2 w-full rounded-full"
         />

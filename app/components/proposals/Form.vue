@@ -6,6 +6,12 @@ const productSearchRowId = ref<number | null>(null)
 const manufacturerSearchOpen = ref(false)
 const manufacturerSearchRowId = ref<number | null>(null)
 
+const props = defineProps<{
+  readonly?: boolean
+  picking?: boolean
+  lockRows?: boolean
+}>()
+
 const emit = defineEmits<{
   'pick-comment-field': [rowId: number, fieldKey: string]
 }>()
@@ -13,7 +19,7 @@ const emit = defineEmits<{
 function handlePickField(rowId: number, fieldKey: string) {
   if (store.pickingNoteId !== null) {
     store.pickField(rowId, fieldKey)
-  } else if (store.pickingCommentId !== null) {
+  } else if (props.picking || store.pickingCommentId !== null) {
     emit('pick-comment-field', rowId, fieldKey)
   }
 }
@@ -66,7 +72,9 @@ function handleManufacturerConfirm(manufacturer: { name: string }) {
       :created-at="row.createdAt"
       :updated-at="row.updatedAt"
       :highlights="store.highlights"
-      :picking="store.pickingNoteId !== null || store.pickingCommentId !== null"
+      :picking="!!props.picking || store.pickingNoteId !== null || store.pickingCommentId !== null"
+      :readonly="props.readonly"
+      :lock-rows="props.lockRows"
       class="px-3 py-2 cursor-pointer hover:shadow-md"
       @click="activeRow = activeRow === row.id ? null : row.id"
       @delete="store.removeFormRow(row.id)"
@@ -76,6 +84,7 @@ function handleManufacturerConfirm(manufacturer: { name: string }) {
       @open-manufacturer-search="openManufacturerSearch(row.id)"
     />
     <UButton
+      v-if="!props.readonly && !props.lockRows"
       label="行を追加"
       icon="i-lucide-plus"
       variant="outline"

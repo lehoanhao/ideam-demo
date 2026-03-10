@@ -9,6 +9,8 @@ const props = defineProps<{
   updatedAt: string | null
   highlights: HighlightTarget[]
   picking: boolean
+  readonly?: boolean
+  lockRows?: boolean
 }>()
 
 const model = defineModel<FormRowData>({ required: true })
@@ -21,7 +23,7 @@ const emit = defineEmits<{
   openManufacturerSearch: []
 }>()
 
-const variant = computed(() => (props.active ? 'outline' : 'outline'))
+const variant = computed(() => (props.active ? 'outline' as const : 'outline' as const))
 
 const expanded = ref(false)
 
@@ -63,6 +65,7 @@ function isHighlighted(fieldKey: string) {
 function onFieldClick(fieldKey: string, e: MouseEvent) {
   if (props.picking) {
     e.stopPropagation()
+    e.preventDefault()
     emit('pickField', fieldKey)
   }
 }
@@ -109,6 +112,7 @@ function formatDateTime(iso: string) {
         class="flex flex-row gap-2 justify-end group-hover:visible invisible"
       >
         <UButton
+          v-if="!readonly && !lockRows"
           label="削除"
           color="warning"
           icon="i-material-symbols-delete-outline"
@@ -118,6 +122,7 @@ function formatDateTime(iso: string) {
           @click.stop="emit('delete')"
         />
         <UButton
+          v-if="!readonly && !lockRows"
           label="複写"
           color="info"
           icon="i-material-symbols-content-copy-outline"
@@ -156,6 +161,7 @@ function formatDateTime(iso: string) {
           :variant="variant"
           color="neutral"
           orientation="vertical"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -174,6 +180,7 @@ function formatDateTime(iso: string) {
           v-model="model.itemGroup"
           :variant="variant"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -193,6 +200,7 @@ function formatDateTime(iso: string) {
             v-model="model.productCode"
             :variant="variant"
             class="flex-1"
+            :disabled="readonly"
           />
           <UButton
             icon="i-lucide-search"
@@ -200,6 +208,7 @@ function formatDateTime(iso: string) {
             color="neutral"
             size="xs"
             class="shrink-0"
+            :disabled="readonly"
             @click.stop="emit('openProductSearch')"
           />
         </div>
@@ -216,7 +225,12 @@ function formatDateTime(iso: string) {
         ]"
         @click="onFieldClick('productName', $event)"
       >
-        <UInput v-model="model.productName" :variant="variant" class="w-full" />
+        <UInput
+          v-model="model.productName"
+          :variant="variant"
+          class="w-full"
+          :disabled="readonly"
+        />
       </UFormField>
       <UFormField
         label="売上単価"
@@ -234,6 +248,7 @@ function formatDateTime(iso: string) {
           v-model="model.sellingPrice"
           :variant="variant"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -248,7 +263,12 @@ function formatDateTime(iso: string) {
         ]"
         @click="onFieldClick('packQty', $event)"
       >
-        <UInput v-model="model.packQty" :variant="variant" class="w-full" />
+        <UInput
+          v-model="model.packQty"
+          :variant="variant"
+          class="w-full"
+          :disabled="readonly"
+        />
       </UFormField>
       <UFormField
         label="定価"
@@ -262,7 +282,12 @@ function formatDateTime(iso: string) {
         ]"
         @click="onFieldClick('listPrice', $event)"
       >
-        <UInput v-model="model.listPrice" :variant="variant" class="w-full" />
+        <UInput
+          v-model="model.listPrice"
+          :variant="variant"
+          class="w-full"
+          :disabled="readonly"
+        />
       </UFormField>
       <UFormField
         label="予算単価"
@@ -282,6 +307,7 @@ function formatDateTime(iso: string) {
           :variant="variant"
           color="neutral"
           orientation="vertical"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -300,6 +326,7 @@ function formatDateTime(iso: string) {
           v-model="model.catalogName"
           :variant="variant"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -318,6 +345,7 @@ function formatDateTime(iso: string) {
           v-model="model.catalogPage"
           :variant="variant"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -340,6 +368,7 @@ function formatDateTime(iso: string) {
           size="xs"
           class="w-full"
           :label="model.manufacturerName || '未指定'"
+          :disabled="readonly"
           :ui="{
             trailingIcon: 'ml-auto'
           }"
@@ -362,6 +391,7 @@ function formatDateTime(iso: string) {
           v-model="model.accountName"
           :variant="variant"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -380,6 +410,7 @@ function formatDateTime(iso: string) {
           v-model="model.rfqType"
           :variant="variant"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -394,7 +425,11 @@ function formatDateTime(iso: string) {
         ]"
         @click="onFieldClick('requestDate', $event)"
       >
-        <CommonDatePicker v-model="model.requestDate" :variant="variant" />
+        <CommonDatePicker
+          v-model="model.requestDate"
+          :variant="variant"
+          :disabled="readonly"
+        />
       </UFormField>
       <UFormField
         label="原価"
@@ -408,7 +443,12 @@ function formatDateTime(iso: string) {
         ]"
         @click="onFieldClick('costPrice', $event)"
       >
-        <UInput v-model="model.costPrice" :variant="variant" class="w-full" />
+        <UInput
+          v-model="model.costPrice"
+          :variant="variant"
+          class="w-full"
+          :disabled="readonly"
+        />
       </UFormField>
       <UFormField
         label="サンプル数"
@@ -422,7 +462,12 @@ function formatDateTime(iso: string) {
         ]"
         @click="onFieldClick('sampleQty', $event)"
       >
-        <UInput v-model="model.sampleQty" :variant="variant" class="w-full" />
+        <UInput
+          v-model="model.sampleQty"
+          :variant="variant"
+          class="w-full"
+          :disabled="readonly"
+        />
       </UFormField>
       <UFormField
         label="入荷日"
@@ -436,7 +481,11 @@ function formatDateTime(iso: string) {
         ]"
         @click="onFieldClick('arrivalDate', $event)"
       >
-        <CommonDatePicker v-model="model.arrivalDate" :variant="variant" />
+        <CommonDatePicker
+          v-model="model.arrivalDate"
+          :variant="variant"
+          :disabled="readonly"
+        />
       </UFormField>
       <UFormField
         label="備考(原価明細他)"
@@ -450,7 +499,12 @@ function formatDateTime(iso: string) {
         ]"
         @click="onFieldClick('costNotes', $event)"
       >
-        <UInput v-model="model.costNotes" :variant="variant" class="w-full" />
+        <UInput
+          v-model="model.costNotes"
+          :variant="variant"
+          class="w-full"
+          :disabled="readonly"
+        />
       </UFormField>
       <UFormField
         label="納期/備考"
@@ -468,6 +522,7 @@ function formatDateTime(iso: string) {
           v-model="model.deliveryNotes"
           :variant="variant"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -486,6 +541,7 @@ function formatDateTime(iso: string) {
           v-model="model.adoptionType"
           :variant="variant"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormField>
       <UFormField
@@ -500,7 +556,11 @@ function formatDateTime(iso: string) {
         ]"
         @click="onFieldClick('contactDate', $event)"
       >
-        <CommonDatePicker v-model="model.contactDate" :variant="variant" />
+        <CommonDatePicker
+          v-model="model.contactDate"
+          :variant="variant"
+          :disabled="readonly"
+        />
       </UFormField>
     </div>
   </div>

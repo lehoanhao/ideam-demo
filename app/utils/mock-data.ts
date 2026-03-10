@@ -312,7 +312,7 @@ const baseManufacturers: Manufacturer[] = [
   {
     id: 'mfr_003', code: 'M003', name: '関西テキスタイル株式会社', furigana: 'かんさいてきすたいるかぶしきがいしゃ',
     tags: ['繊維', 'アパレル'], contactEmail: 'sales@kansai-textile.jp', contactPhone: '06-2222-3333',
-    preferredContactMethod: 'email', productCategories: ['繊維', 'テキスタイル'],
+    faxNumber: '06-2222-3334', preferredContactMethod: 'email', productCategories: ['繊維', 'テキスタイル'],
     createdAt: '2024-01-20T11:00:00Z', updatedAt: '2024-03-04T09:15:00Z'
   },
   {
@@ -325,7 +325,7 @@ const baseManufacturers: Manufacturer[] = [
   {
     id: 'mfr_005', code: 'M005', name: '東洋プラスチック工業', furigana: 'とうようぷらすちっくこうぎょう',
     tags: ['プラスチック', '容器'], contactEmail: 'sales@toyo-plastic.jp', contactPhone: '03-5555-6666',
-    preferredContactMethod: 'email', productCategories: ['プラスチック容器', '包装材'],
+    faxNumber: '03-5555-6667', preferredContactMethod: 'email', productCategories: ['プラスチック容器', '包装材'],
     createdAt: '2024-02-15T13:00:00Z', updatedAt: '2024-03-02T11:00:00Z'
   }
 ]
@@ -343,6 +343,7 @@ function generateExtraManufacturers(): Manufacturer[] {
       tags: [categories[idx % categories.length]],
       contactEmail: `contact${i}@example.jp`,
       contactPhone: `0${3 + (i % 5)}-${1000 + i}-${2000 + i}`,
+      faxNumber: `0${3 + (i % 5)}-${1000 + i}-${3000 + i}`,
       preferredContactMethod: i % 2 === 0 ? 'email' : 'fax',
       productCategories: [categories[idx % categories.length]],
       createdAt: '2024-01-15T09:00:00Z',

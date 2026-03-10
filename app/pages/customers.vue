@@ -25,6 +25,21 @@ const links = [
     to: '/customers'
   }
 ] satisfies NavigationMenuItem[]
+
+const tags = [
+  {
+    label: '大切な顧客',
+    color: 'warning'
+  },
+  {
+    label: '緊急',
+    color: 'error'
+  },
+  {
+    label: 'フォローアップ',
+    color: 'info'
+  }
+]
 </script>
 
 <template>
@@ -65,6 +80,33 @@ const links = [
         tooltip
         popover
       />
+      <div>
+        <div>
+          <USeparator class="mt-2" />
+          <small v-if="!collapsed" class="px-2 text-xs text-muted">
+            タグ
+          </small>
+        </div>
+        <UNavigationMenu
+          :collapsed="collapsed"
+          :items="tags"
+          orientation="vertical"
+          tooltip
+          popover
+        >
+          <template #item-leading="{ item }">
+            <UBadge :color="item.color" variant="solid" />
+          </template>
+        </UNavigationMenu>
+        <UButton
+          icon="i-ei-plus"
+          color="neutral"
+          variant="soft"
+          label="タグを追加"
+          size="sm"
+          class="mt-2 w-full rounded-full"
+        />
+      </div>
     </template>
   </UDashboardSidebar>
 

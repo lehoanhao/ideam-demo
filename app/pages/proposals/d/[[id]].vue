@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import type { StepperItem } from '@nuxt/ui'
 import type { ProposalStatus } from '~/types'
-import {
-  useProposalStore,
-  FORM_ROW_FIELDS
-} from '~/stores/proposals'
+import { useProposalStore, FORM_ROW_FIELDS } from '~/stores/proposals'
 import { useManufacturerStore } from '~/stores/manufacturers'
 
 const route = useRoute()
@@ -172,15 +169,17 @@ const showApprovalConfirmModal = ref(false)
 
 async function handleSlideApproved() {
   try {
+    const now = new Date().toISOString()
     if (proposalId.value) {
       await proposalStore.updateProposal(proposalId.value, {
         status: 'approved',
         approvalStatus: 'approved',
         approvedBy: 'user_001',
-        approvalDate: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        approvalDate: now,
+        updatedAt: now
       })
     }
+    proposalStore.formApprovalDate = now.slice(0, 10)
     showApprovalConfirmModal.value = false
     advanceStatus('approved', '承認しました')
   } catch {
@@ -295,6 +294,8 @@ function addComment() {
   })
   newCommentText.value = ''
   commentPickingFields.value = []
+  proposalStore.setHighlights([])
+  toast.add({ title: 'コメントを追加しました', color: 'success' })
 }
 
 // --- Primary button config ---
@@ -444,7 +445,11 @@ function advanceStatus(newStatus: ProposalStatus, message: string) {
     proposalStore.selectedProposal.status = newStatus
   }
   currentStep.value = statusToStep[newStatus] ?? currentStep.value
-  addTimelineEntry(message, (statusIconMap as Record<string, string>)[newStatus] || 'i-heroicons-check-circle')
+  addTimelineEntry(
+    message,
+    (statusIconMap as Record<string, string>)[newStatus]
+    || 'i-heroicons-check-circle'
+  )
   toast.add({ title: message, color: 'success' })
 }
 
@@ -514,19 +519,23 @@ function handlePrimaryClick() {
       showApprovalConfirmModal.value = true
       break
     case 'approved':
-      openConfirm('顧客確認の開始', '顧客との確認を開始しますか？', async () => {
-        try {
-          if (proposalId.value) {
-            await proposalStore.updateProposal(proposalId.value, {
-              status: 'confirming',
-              updatedAt: new Date().toISOString()
-            })
+      openConfirm(
+        '顧客確認の開始',
+        '顧客との確認を開始しますか？',
+        async () => {
+          try {
+            if (proposalId.value) {
+              await proposalStore.updateProposal(proposalId.value, {
+                status: 'confirming',
+                updatedAt: new Date().toISOString()
+              })
+            }
+            advanceStatus('confirming', '顧客確認を開始しました')
+          } catch {
+            toast.add({ title: '処理に失敗しました', color: 'error' })
           }
-          advanceStatus('confirming', '顧客確認を開始しました')
-        } catch {
-          toast.add({ title: '処理に失敗しました', color: 'error' })
         }
-      })
+      )
       break
     case 'confirming':
       openConfirm('完了の確認', 'この提案を完了にしますか？', async () => {
@@ -741,6 +750,22 @@ const isPickingCommentField = computed(
 const commentPickingFields = ref<CommentField[]>([])
 const activeCommentId = ref<number | null>(null)
 
+// --- Read-only state (承認中 and beyond) ---
+const isReadonly = computed(() =>
+  ['pending_approval', 'approved', 'confirming', 'completed'].includes(
+    currentStatus.value
+  )
+)
+
+const isRowsLocked = computed(() =>
+  ['submitted', 'quoted', 'pricing', 'pending_approval', 'approved', 'rejected', 'confirming', 'completed'].includes(
+    currentStatus.value
+  )
+)
+
+// --- Picking mode: only active at 承認中 ---
+const isPicking = computed(() => currentStatus.value === 'pending_approval')
+
 let _nextPickCommentId = 1
 
 function startCommentPicking() {
@@ -807,17 +832,25 @@ function formatFieldLabel(field: CommentField) {
 // --- Budget computed ---
 const budgetDescription = computed(() => {
   return proposalStore.formRows
-    .map((r: { data: { budgetPrice: number | null, budgetQty: number | null } }, i: number) => {
-      const price = r.data.budgetPrice ?? 0
-      const qty = r.data.budgetQty ?? 0
-      return `行${i + 1}: ${price.toLocaleString()} × ${qty.toLocaleString()}`
-    })
+    .map(
+      (
+        r: { data: { budgetPrice: number | null, budgetQty: number | null } },
+        i: number
+      ) => {
+        const price = r.data.budgetPrice ?? 0
+        const qty = r.data.budgetQty ?? 0
+        return `行${i + 1}: ${price.toLocaleString()} × ${qty.toLocaleString()}`
+      }
+    )
     .join(' / ')
 })
 
 const budgetTotal = computed(() => {
   return proposalStore.formRows.reduce(
-    (sum: number, r: { data: { budgetPrice: number | null, budgetQty: number | null } }) => {
+    (
+      sum: number,
+      r: { data: { budgetPrice: number | null, budgetQty: number | null } }
+    ) => {
       const price = r.data.budgetPrice ?? 0
       const qty = r.data.budgetQty ?? 0
       return sum + price * qty
@@ -828,7 +861,9 @@ const budgetTotal = computed(() => {
 </script>
 
 <template>
-  <div class="w-full flex justify-between h-full overflow-hidden bg-elevated/60">
+  <div
+    class="w-full flex justify-between h-full overflow-hidden bg-neutral-100"
+  >
     <!-- Main panel -->
     <div class="flex-1 w-full flex flex-col min-w-0 overflow-auto">
       <div class="flex-1 overflow-auto">
@@ -869,6 +904,9 @@ const budgetTotal = computed(() => {
 
         <ProposalsForm
           v-if="!proposalStore.loading"
+          :readonly="isReadonly"
+          :picking="isPicking"
+          :lock-rows="isRowsLocked"
           @pick-comment-field="onPickCommentField"
         />
         <div v-else class="flex items-center justify-center p-12">
@@ -876,6 +914,57 @@ const budgetTotal = computed(() => {
             name="i-lucide-loader-2"
             class="size-6 animate-spin text-muted"
           />
+        </div>
+      </div>
+
+      <!-- Bottom comment bar -->
+      <div
+        v-if="commentPickingFields.length > 0"
+        class="border-t shadow-[0_-1px_5px_rgba(0,0,0,0.1)] border-default bg-white dark:bg-neutral-800 px-4 py-3 space-y-2"
+      >
+        <div class="flex flex-wrap items-center gap-1">
+          <span class="text-xs text-muted mr-1">選択中:</span>
+          <div
+            v-for="(field, idx) in commentPickingFields"
+            :key="`${field.rowId}-${field.fieldKey}`"
+            class="inline-flex items-center gap-1 text-xs text-primary bg-primary/10 rounded px-1.5 py-0.5"
+          >
+            <UIcon name="i-heroicons-check-circle" class="size-3" />
+            {{ formatFieldLabel(field) }}
+            <button class="hover:text-red-500" @click="removePickedField(idx)">
+              <UIcon name="i-heroicons-x-mark" class="size-3" />
+            </button>
+          </div>
+        </div>
+        <div class="flex items-end gap-2">
+          <UTextarea
+            v-model="newCommentText"
+            :rows="2"
+            placeholder="コメントを入力..."
+            class="flex-1"
+            autoresize
+          />
+          <div class="flex gap-2 flex-col">
+            <UButton
+              label="キャンセル"
+              icon="i-lucide-x"
+              size="sm"
+              color="neutral"
+              variant="soft"
+              @click="
+                commentPickingFields = [];
+                proposalStore.setHighlights([]);
+              "
+            />
+            <UButton
+              label="コメント"
+              icon="i-lucide-send"
+              size="sm"
+              color="primary"
+              :disabled="!newCommentText.trim()"
+              @click="addComment()"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -1066,7 +1155,11 @@ const budgetTotal = computed(() => {
             <UInput :model-value="budgetDescription" class="w-full" readonly />
           </UFormField>
           <UFormField label="予算合計" class="w-full" size="xs">
-            <UInput :model-value="budgetTotal.toLocaleString()" class="w-full" readonly />
+            <UInput
+              :model-value="budgetTotal.toLocaleString()"
+              class="w-full"
+              readonly
+            />
           </UFormField>
         </div>
         <div class="flex flex-col justify-between gap-2 mt-4">
@@ -1217,7 +1310,7 @@ const budgetTotal = computed(() => {
 }
 
 :deep([data-state="active"] [data-slot="trigger"])::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -3px;
   border-radius: 9999px;
@@ -1235,7 +1328,7 @@ const budgetTotal = computed(() => {
 }
 
 :deep([data-state="active"] [data-slot="trigger"])::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -1px;
   border-radius: 9999px;
