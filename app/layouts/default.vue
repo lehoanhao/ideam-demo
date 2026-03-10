@@ -19,7 +19,6 @@ const showAnnouncements = ref(false)
 onMounted(() => {
   const seen = sessionStorage.getItem('announcements-seen')
   if (!seen) {
-    showAnnouncements.value = true
     sessionStorage.setItem('announcements-seen', '1')
   }
 })
@@ -170,7 +169,19 @@ onMounted(async () => {
         </UNavigationMenu>
       </template>
       <template #footer="{ collapsed }">
-        <UserMenu :collapsed="true" />
+        <div class="flex flex-col items-center gap-2">
+          <UChip color="error" :show="true" inset>
+            <UButton
+              icon="i-lucide-bell"
+              color="neutral"
+              variant="ghost"
+              size="lg"
+              class="rounded-full"
+              @click="showAnnouncements = true"
+            />
+          </UChip>
+          <UserMenu :collapsed="true" />
+        </div>
       </template>
     </UDashboardSidebar>
     <!-- <UDashboardSidebar
