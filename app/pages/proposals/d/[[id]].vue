@@ -296,6 +296,8 @@ function addComment() {
   commentPickingFields.value = []
   proposalStore.setHighlights([])
   toast.add({ title: 'コメントを追加しました', color: 'success' })
+  proposalStore.setHighlights([])
+  proposalStore.cancelCommentPicking()
 }
 
 // --- Primary button config ---
@@ -862,7 +864,7 @@ const budgetTotal = computed(() => {
 
 <template>
   <div
-    class="w-full flex justify-between h-full overflow-hidden bg-neutral-100"
+    class="w-full flex justify-between h-full overflow-hidden bg-neutral-100 dark:bg-neutral-950"
   >
     <!-- Main panel -->
     <div class="flex-1 w-full flex flex-col min-w-0 overflow-auto">
@@ -919,7 +921,7 @@ const budgetTotal = computed(() => {
 
       <!-- Bottom comment bar -->
       <div
-        v-if="commentPickingFields.length > 0"
+        v-if="commentPickingFields.length > 0 && currentStatus.value === 'pending_approval'"
         class="border-t shadow-[0_-1px_5px_rgba(0,0,0,0.1)] border-default bg-white dark:bg-neutral-800 px-4 py-3 space-y-2"
       >
         <div class="flex flex-wrap items-center gap-1">
@@ -1101,7 +1103,12 @@ const budgetTotal = computed(() => {
                     />
                   </div>
                 </template>
-                <div class="flex-1 w-px bg-primary mt-1" />
+                <div
+                  class="flex-1 w-px mt-0.5"
+                  :class="{
+                    'bg-primary': idx !== combinedTimeline.length - 1
+                  }"
+                />
               </div>
               <!-- Content -->
               <div class="flex-1 pb-3">

@@ -43,6 +43,63 @@ const pageTitle = computed(() => {
 const searchQuery = ref('')
 const typeFilter = ref<SalesActivityType | ''>('')
 
+// Advanced search
+const showAdvancedSearch = ref(false)
+const advancedSearch = ref({
+  code: '',
+  customerName: '',
+  title: '',
+  assignedToName: '',
+  contactPerson: '',
+  type: '' as SalesActivityType | '',
+  status: '' as SalesActivityStatus | '',
+  interestLevel: '' as '' | 'high' | 'medium' | 'low',
+  dateFrom: '',
+  dateTo: '',
+  createdFrom: '',
+  createdTo: '',
+  tags: [] as string[]
+})
+
+function resetAdvancedSearch() {
+  advancedSearch.value = {
+    code: '',
+    customerName: '',
+    title: '',
+    assignedToName: '',
+    contactPerson: '',
+    type: '',
+    status: '',
+    interestLevel: '',
+    dateFrom: '',
+    dateTo: '',
+    createdFrom: '',
+    createdTo: '',
+    tags: []
+  }
+}
+
+const statusOptions = [
+  { label: 'すべて', value: '' },
+  { label: '予定', value: 'planned' },
+  { label: '進行中', value: 'in_progress' },
+  { label: '完了', value: 'completed' },
+  { label: 'キャンセル', value: 'cancelled' }
+]
+
+const interestLevelOptions = [
+  { label: 'すべて', value: '' },
+  { label: '高', value: 'high' },
+  { label: '中', value: 'medium' },
+  { label: '低', value: 'low' }
+]
+
+const allTags = computed(() => {
+  const tagSet = new Set<string>()
+  store.activities.forEach(a => a.tags.forEach(t => tagSet.add(t)))
+  return [...tagSet].sort()
+})
+
 onMounted(() => store.fetchActivities())
 
 const statusColorMap: Record<SalesActivityStatus, string> = {
@@ -88,6 +145,8 @@ const activeStatuses = computed(() => {
 
 const filteredActivities = computed(() => {
   let result: SalesActivity[] = store.activities
+
+  // Simple search
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter((a: SalesActivity) =>
@@ -97,12 +156,64 @@ const filteredActivities = computed(() => {
       || a.assignedToName.toLowerCase().includes(q)
     )
   }
+
+  // Tag-based status filter
   if (activeStatuses.value.length > 0) {
     result = result.filter((a: SalesActivity) => activeStatuses.value.includes(a.status))
   }
+
+  // Type filter from toolbar
   if (typeFilter.value) {
     result = result.filter((a: SalesActivity) => a.type === typeFilter.value)
   }
+
+  // Advanced search filters
+  const adv = advancedSearch.value
+  if (adv.code) {
+    const q = adv.code.toLowerCase()
+    result = result.filter(a => a.code.toLowerCase().includes(q))
+  }
+  if (adv.customerName) {
+    const q = adv.customerName.toLowerCase()
+    result = result.filter(a => a.customerName.toLowerCase().includes(q))
+  }
+  if (adv.title) {
+    const q = adv.title.toLowerCase()
+    result = result.filter(a => a.title.toLowerCase().includes(q))
+  }
+  if (adv.assignedToName) {
+    const q = adv.assignedToName.toLowerCase()
+    result = result.filter(a => a.assignedToName.toLowerCase().includes(q))
+  }
+  if (adv.contactPerson) {
+    const q = adv.contactPerson.toLowerCase()
+    result = result.filter(a => (a.contactPerson ?? '').toLowerCase().includes(q))
+  }
+  if (adv.type) {
+    result = result.filter(a => a.type === adv.type)
+  }
+  if (adv.status) {
+    result = result.filter(a => a.status === adv.status)
+  }
+  if (adv.interestLevel) {
+    result = result.filter(a => a.interestLevel === adv.interestLevel)
+  }
+  if (adv.dateFrom) {
+    result = result.filter(a => a.activityDate >= adv.dateFrom)
+  }
+  if (adv.dateTo) {
+    result = result.filter(a => a.activityDate <= adv.dateTo)
+  }
+  if (adv.createdFrom) {
+    result = result.filter(a => a.createdAt >= adv.createdFrom)
+  }
+  if (adv.createdTo) {
+    result = result.filter(a => a.createdAt <= adv.createdTo)
+  }
+  if (adv.tags.length > 0) {
+    result = result.filter(a => adv.tags.every(t => a.tags.includes(t)))
+  }
+
   return result
 })
 
@@ -220,8 +331,8 @@ const columns: TableColumn<SalesActivity>[] = [
         <UInput
           v-model="searchQuery"
           icon="i-lucide-search"
-          placeholder="検索..."
-          class="w-60"
+          placeholder="コード・顧客名・タイトル・担当者で検索..."
+          class="w-72"
         />
         <USelectMenu
           v-model="typeFilter"
@@ -230,11 +341,136 @@ const columns: TableColumn<SalesActivity>[] = [
           class="w-32"
           placeholder="種類"
         />
+        <UButton
+          :icon="showAdvancedSearch ? 'i-lucide-chevron-up' : 'i-lucide-sliders-horizontal'"
+          :label="showAdvancedSearch ? '検索を閉じる' : '高度な検索'"
+          :color="showAdvancedSearch ? 'primary' : 'neutral'"
+          variant="outline"
+          @click="showAdvancedSearch = !showAdvancedSearch"
+        />
       </template>
       <template #right>
         <span class="text-sm text-muted">{{ filteredActivities.length }}件</span>
       </template>
     </UDashboardToolbar>
+
+    <!-- Advanced Search Panel -->
+    <div
+      v-show="showAdvancedSearch"
+      class="border-b border-default bg-default/50 px-4 py-4 transition-all duration-200 ease-out"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <UFormField label="コード" size="xs">
+          <UInput
+            v-model="advancedSearch.code"
+            placeholder="例: ACT-001"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="顧客名" size="xs">
+          <UInput
+            v-model="advancedSearch.customerName"
+            placeholder="顧客名で検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="タイトル" size="xs">
+          <UInput
+            v-model="advancedSearch.title"
+            placeholder="タイトルで検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="担当者" size="xs">
+          <UInput
+            v-model="advancedSearch.assignedToName"
+            placeholder="担当者名で検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="連絡先担当者" size="xs">
+          <UInput
+            v-model="advancedSearch.contactPerson"
+            placeholder="連絡先担当者で検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="種類" size="xs">
+          <USelect
+            v-model="advancedSearch.type"
+            :items="typeOptions"
+            value-key="value"
+            placeholder="すべて"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="ステータス" size="xs">
+          <USelect
+            v-model="advancedSearch.status"
+            :items="statusOptions"
+            value-key="value"
+            placeholder="すべて"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="意欲" size="xs">
+          <USelect
+            v-model="advancedSearch.interestLevel"
+            :items="interestLevelOptions"
+            value-key="value"
+            placeholder="すべて"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="活動日（開始）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.dateFrom" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="活動日（終了）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.dateTo" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="作成日（開始）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.createdFrom" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="作成日（終了）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.createdTo" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="タグ" size="xs">
+          <USelectMenu
+            v-model="advancedSearch.tags"
+            :items="allTags"
+            multiple
+            placeholder="タグで絞り込み"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <UButton
+          icon="i-lucide-rotate-ccw"
+          label="リセット"
+          color="neutral"
+          variant="outline"
+          size="xs"
+          @click="resetAdvancedSearch"
+        />
+        <UButton
+          icon="i-lucide-search"
+          label="検索"
+          color="primary"
+          size="xs"
+          @click="pagination.pageIndex = 0"
+        />
+      </div>
+    </div>
 
     <UTable
       v-model:pagination="pagination"

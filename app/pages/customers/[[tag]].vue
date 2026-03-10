@@ -30,9 +30,35 @@ const pageTitle = computed(() => {
   return `顧客管理 - ${currentTag.value}`
 })
 
-const filterCode = ref('')
-const filterName = ref('')
-const filterTags = ref<string[]>([])
+const searchQuery = ref('')
+
+// Advanced search
+const showAdvancedSearch = ref(false)
+const advancedSearch = ref({
+  code: '',
+  name: '',
+  furigana: '',
+  tags: [] as string[],
+  contactValue: '',
+  createdFrom: '',
+  createdTo: '',
+  updatedFrom: '',
+  updatedTo: ''
+})
+
+function resetAdvancedSearch() {
+  advancedSearch.value = {
+    code: '',
+    name: '',
+    furigana: '',
+    tags: [],
+    contactValue: '',
+    createdFrom: '',
+    createdTo: '',
+    updatedFrom: '',
+    updatedTo: ''
+  }
+}
 
 const allTags = computed(() => {
   const tagSet = new Set<string>()
@@ -41,19 +67,58 @@ const allTags = computed(() => {
 })
 
 const filteredCustomers = computed(() => {
-  return customerStore.customers.filter((c) => {
-    const matchCode = !filterCode.value
-      || c.code.toLowerCase().includes(filterCode.value.toLowerCase())
-      || c.id.toLowerCase().includes(filterCode.value.toLowerCase())
-    const matchName = !filterName.value
-      || c.name.toLowerCase().includes(filterName.value.toLowerCase())
-      || (c.furigana ?? '').toLowerCase().includes(filterName.value.toLowerCase())
-    const matchTags = filterTags.value.length === 0
-      || filterTags.value.every(t => c.tags.includes(t))
-    const matchCurrentTag = !currentTag.value
-      || c.tags.includes(currentTag.value)
-    return matchCode && matchName && matchTags && matchCurrentTag
-  })
+  let list = customerStore.customers
+
+  // Simple search
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
+    list = list.filter(c =>
+      c.name.toLowerCase().includes(q)
+      || c.code.toLowerCase().includes(q)
+      || (c.furigana ?? '').toLowerCase().includes(q)
+    )
+  }
+
+  // Tag-based filter from route
+  if (currentTag.value) {
+    list = list.filter(c => c.tags.includes(currentTag.value))
+  }
+
+  // Advanced search filters
+  const adv = advancedSearch.value
+  if (adv.code) {
+    const q = adv.code.toLowerCase()
+    list = list.filter(c => c.code.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
+  }
+  if (adv.name) {
+    const q = adv.name.toLowerCase()
+    list = list.filter(c => c.name.toLowerCase().includes(q))
+  }
+  if (adv.furigana) {
+    const q = adv.furigana.toLowerCase()
+    list = list.filter(c => (c.furigana ?? '').toLowerCase().includes(q))
+  }
+  if (adv.tags.length > 0) {
+    list = list.filter(c => adv.tags.every(t => c.tags.includes(t)))
+  }
+  if (adv.contactValue) {
+    const q = adv.contactValue.toLowerCase()
+    list = list.filter(c => c.contacts.some(ct => ct.value.toLowerCase().includes(q)))
+  }
+  if (adv.createdFrom) {
+    list = list.filter(c => c.createdAt >= adv.createdFrom)
+  }
+  if (adv.createdTo) {
+    list = list.filter(c => c.createdAt <= adv.createdTo)
+  }
+  if (adv.updatedFrom) {
+    list = list.filter(c => c.updatedAt >= adv.updatedFrom)
+  }
+  if (adv.updatedTo) {
+    list = list.filter(c => c.updatedAt <= adv.updatedTo)
+  }
+
+  return list
 })
 
 onMounted(() => {
@@ -169,28 +234,19 @@ const columns: TableColumn<Customer>[] = [
 
     <UDashboardToolbar>
       <template #left>
-        <div class="flex items-center gap-2 flex-wrap">
-          <UInput
-            v-model="filterCode"
-            placeholder="顧客IDで検索..."
-            icon="i-lucide-hash"
-            class="w-36"
-          />
-          <UInput
-            v-model="filterName"
-            placeholder="顧客名・ふりがな..."
-            icon="i-lucide-search"
-            class="w-52"
-          />
-          <USelectMenu
-            v-model="filterTags"
-            :items="allTags"
-            multiple
-            placeholder="タグで絞り込み"
-            icon="i-lucide-tag"
-            class="w-48"
-          />
-        </div>
+        <UInput
+          v-model="searchQuery"
+          icon="i-lucide-search"
+          placeholder="顧客コード・顧客名・ふりがなで検索..."
+          class="w-72"
+        />
+        <UButton
+          :icon="showAdvancedSearch ? 'i-lucide-chevron-up' : 'i-lucide-sliders-horizontal'"
+          :label="showAdvancedSearch ? '検索を閉じる' : '高度な検索'"
+          :color="showAdvancedSearch ? 'primary' : 'neutral'"
+          variant="outline"
+          @click="showAdvancedSearch = !showAdvancedSearch"
+        />
       </template>
       <template #right>
         <span class="text-sm text-muted">
@@ -198,6 +254,86 @@ const columns: TableColumn<Customer>[] = [
         </span>
       </template>
     </UDashboardToolbar>
+
+    <!-- Advanced Search Panel -->
+    <div
+      v-show="showAdvancedSearch"
+      class="border-b border-default bg-default/50 px-4 py-4 transition-all duration-200 ease-out"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <UFormField label="顧客コード" size="xs">
+          <UInput
+            v-model="advancedSearch.code"
+            placeholder="例: C-001"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="顧客名" size="xs">
+          <UInput
+            v-model="advancedSearch.name"
+            placeholder="顧客名で検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="ふりがな" size="xs">
+          <UInput
+            v-model="advancedSearch.furigana"
+            placeholder="ふりがなで検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="連絡先" size="xs">
+          <UInput
+            v-model="advancedSearch.contactValue"
+            placeholder="メール・電話・FAX"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="タグ" size="xs">
+          <USelectMenu
+            v-model="advancedSearch.tags"
+            :items="allTags"
+            multiple
+            placeholder="タグで絞り込み"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="作成日（開始）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.createdFrom" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="作成日（終了）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.createdTo" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="更新日（開始）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.updatedFrom" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="更新日（終了）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.updatedTo" size="xs" class="w-full" />
+        </UFormField>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <UButton
+          icon="i-lucide-rotate-ccw"
+          label="リセット"
+          color="neutral"
+          variant="outline"
+          size="xs"
+          @click="resetAdvancedSearch"
+        />
+        <UButton
+          icon="i-lucide-search"
+          label="検索"
+          color="primary"
+          size="xs"
+          @click="pagination.pageIndex = 0"
+        />
+      </div>
+    </div>
 
     <UTable
       ref="table"

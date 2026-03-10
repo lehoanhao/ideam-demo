@@ -32,6 +32,57 @@ const pageTitle = computed(() => {
 
 const searchQuery = ref('')
 
+// Advanced search
+const showAdvancedSearch = ref(false)
+const advancedSearch = ref({
+  code: '',
+  name: '',
+  furigana: '',
+  contactEmail: '',
+  contactPhone: '',
+  faxNumber: '',
+  preferredContactMethod: '' as '' | 'email' | 'fax' | 'phone',
+  productCategory: '',
+  tags: [] as string[],
+  createdFrom: '',
+  createdTo: ''
+})
+
+function resetAdvancedSearch() {
+  advancedSearch.value = {
+    code: '',
+    name: '',
+    furigana: '',
+    contactEmail: '',
+    contactPhone: '',
+    faxNumber: '',
+    preferredContactMethod: '',
+    productCategory: '',
+    tags: [],
+    createdFrom: '',
+    createdTo: ''
+  }
+}
+
+const contactMethodOptions = [
+  { label: 'すべて', value: '' },
+  { label: 'メール', value: 'email' },
+  { label: 'FAX', value: 'fax' },
+  { label: '電話', value: 'phone' }
+]
+
+const allTags = computed(() => {
+  const tagSet = new Set<string>()
+  mfrStore.manufacturers.forEach(m => m.tags.forEach(t => tagSet.add(t)))
+  return [...tagSet].sort()
+})
+
+const allCategories = computed(() => {
+  const catSet = new Set<string>()
+  mfrStore.manufacturers.forEach(m => m.productCategories.forEach(c => catSet.add(c)))
+  return [...catSet].sort()
+})
+
 onMounted(() => { mfrStore.fetchManufacturers() })
 
 const contactMethodLabel = (method: string) => {
@@ -45,6 +96,8 @@ const contactMethodColor = (method: string): 'primary' | 'success' | 'warning' =
 
 const filteredManufacturers = computed(() => {
   let list = mfrStore.manufacturers
+
+  // Simple search
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     list = list.filter((m: Manufacturer) =>
@@ -53,12 +106,58 @@ const filteredManufacturers = computed(() => {
       || (m.furigana ?? '').toLowerCase().includes(q)
     )
   }
+
+  // Tag-based filter from route
   if (currentTag.value) {
     list = list.filter((m: Manufacturer) =>
       m.tags.includes(currentTag.value)
       || m.productCategories.includes(currentTag.value)
     )
   }
+
+  // Advanced search filters
+  const adv = advancedSearch.value
+  if (adv.code) {
+    const q = adv.code.toLowerCase()
+    list = list.filter(m => m.code.toLowerCase().includes(q))
+  }
+  if (adv.name) {
+    const q = adv.name.toLowerCase()
+    list = list.filter(m => m.name.toLowerCase().includes(q))
+  }
+  if (adv.furigana) {
+    const q = adv.furigana.toLowerCase()
+    list = list.filter(m => (m.furigana ?? '').toLowerCase().includes(q))
+  }
+  if (adv.contactEmail) {
+    const q = adv.contactEmail.toLowerCase()
+    list = list.filter(m => (m.contactEmail ?? '').toLowerCase().includes(q))
+  }
+  if (adv.contactPhone) {
+    const q = adv.contactPhone.toLowerCase()
+    list = list.filter(m => (m.contactPhone ?? '').toLowerCase().includes(q))
+  }
+  if (adv.faxNumber) {
+    const q = adv.faxNumber.toLowerCase()
+    list = list.filter(m => (m.faxNumber ?? '').toLowerCase().includes(q))
+  }
+  if (adv.preferredContactMethod) {
+    list = list.filter(m => m.preferredContactMethod === adv.preferredContactMethod)
+  }
+  if (adv.productCategory) {
+    const q = adv.productCategory.toLowerCase()
+    list = list.filter(m => m.productCategories.some(c => c.toLowerCase().includes(q)))
+  }
+  if (adv.tags.length > 0) {
+    list = list.filter(m => adv.tags.every(t => m.tags.includes(t)))
+  }
+  if (adv.createdFrom) {
+    list = list.filter(m => m.createdAt >= adv.createdFrom)
+  }
+  if (adv.createdTo) {
+    list = list.filter(m => m.createdAt <= adv.createdTo)
+  }
+
   return list
 })
 
@@ -173,6 +272,13 @@ const columns: TableColumn<Manufacturer>[] = [
           icon="i-lucide-search"
           class="w-72"
         />
+        <UButton
+          :icon="showAdvancedSearch ? 'i-lucide-chevron-up' : 'i-lucide-sliders-horizontal'"
+          :label="showAdvancedSearch ? '検索を閉じる' : '高度な検索'"
+          :color="showAdvancedSearch ? 'primary' : 'neutral'"
+          variant="outline"
+          @click="showAdvancedSearch = !showAdvancedSearch"
+        />
       </template>
       <template #right>
         <span class="text-sm text-muted">
@@ -180,6 +286,115 @@ const columns: TableColumn<Manufacturer>[] = [
         </span>
       </template>
     </UDashboardToolbar>
+
+    <!-- Advanced Search Panel -->
+    <div
+      v-show="showAdvancedSearch"
+      class="border-b border-default bg-default/50 px-4 py-4 transition-all duration-200 ease-out"
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <UFormField label="コード" size="xs">
+          <UInput
+            v-model="advancedSearch.code"
+            placeholder="例: M-001"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="メーカー名" size="xs">
+          <UInput
+            v-model="advancedSearch.name"
+            placeholder="メーカー名で検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="ふりがな" size="xs">
+          <UInput
+            v-model="advancedSearch.furigana"
+            placeholder="ふりがなで検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="メール" size="xs">
+          <UInput
+            v-model="advancedSearch.contactEmail"
+            placeholder="メールで検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="電話番号" size="xs">
+          <UInput
+            v-model="advancedSearch.contactPhone"
+            placeholder="電話番号で検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="FAX番号" size="xs">
+          <UInput
+            v-model="advancedSearch.faxNumber"
+            placeholder="FAX番号で検索"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="連絡方法" size="xs">
+          <USelect
+            v-model="advancedSearch.preferredContactMethod"
+            :items="contactMethodOptions"
+            value-key="value"
+            placeholder="すべて"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="商品カテゴリ" size="xs">
+          <USelectMenu
+            v-model="advancedSearch.productCategory"
+            :items="allCategories"
+            placeholder="カテゴリで絞り込み"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="タグ" size="xs">
+          <USelectMenu
+            v-model="advancedSearch.tags"
+            :items="allTags"
+            multiple
+            placeholder="タグで絞り込み"
+            size="xs"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="作成日（開始）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.createdFrom" size="xs" class="w-full" />
+        </UFormField>
+        <UFormField label="作成日（終了）" size="xs">
+          <CommonDatePicker v-model="advancedSearch.createdTo" size="xs" class="w-full" />
+        </UFormField>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <UButton
+          icon="i-lucide-rotate-ccw"
+          label="リセット"
+          color="neutral"
+          variant="outline"
+          size="xs"
+          @click="resetAdvancedSearch"
+        />
+        <UButton
+          icon="i-lucide-search"
+          label="検索"
+          color="primary"
+          size="xs"
+          @click="pagination.pageIndex = 0"
+        />
+      </div>
+    </div>
 
     <UTable
       ref="table"
