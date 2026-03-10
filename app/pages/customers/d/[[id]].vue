@@ -47,11 +47,21 @@ const state = reactive<Partial<Schema>>({
 
 const tags = ref<string[]>([])
 const newTag = ref('')
-const contacts = ref<{ id: string, type: string, value: string, name: string, isPrimary: boolean }[]>([])
+const contacts = ref<
+  {
+    id: string
+    type: string
+    value: string
+    name: string
+    isPrimary: boolean
+  }[]
+>([])
 
 onMounted(async () => {
   if (isNew.value) {
-    contacts.value = [{ id: '1', type: 'email', value: '', name: '', isPrimary: true }]
+    contacts.value = [
+      { id: '1', type: 'email', value: '', name: '', isPrimary: true }
+    ]
     return
   }
   await customerStore.getCustomerById(customerId.value!)
@@ -68,7 +78,9 @@ onMounted(async () => {
       isPrimary: c.isPrimary
     }))
     if (!contacts.value.length) {
-      contacts.value = [{ id: '1', type: 'email', value: '', name: '', isPrimary: true }]
+      contacts.value = [
+        { id: '1', type: 'email', value: '', name: '', isPrimary: true }
+      ]
     }
   }
 })
@@ -100,7 +112,10 @@ function removeContact(id: string) {
 }
 
 function setPrimaryContact(id: string) {
-  contacts.value = contacts.value.map(c => ({ ...c, isPrimary: c.id === id }))
+  contacts.value = contacts.value.map(c => ({
+    ...c,
+    isPrimary: c.id === id
+  }))
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -128,7 +143,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       toast.add({ title: '顧客情報を更新しました', color: 'success' })
     }
   } catch {
-    toast.add({ title: isNew.value ? '顧客の追加に失敗しました' : '更新に失敗しました', color: 'error' })
+    toast.add({
+      title: isNew.value ? '顧客の追加に失敗しました' : '更新に失敗しました',
+      color: 'error'
+    })
   }
 }
 
@@ -197,14 +215,14 @@ const historyTimeline = computed<HistoryEntry[]>(() => {
 })
 
 const sidebarTitle = computed(() =>
-  isNew.value
-    ? '新規顧客登録'
-    : `顧客: ${customer.value?.name || ''}`
+  isNew.value ? '新規顧客登録' : `顧客: ${customer.value?.name || ''}`
 )
 </script>
 
 <template>
-  <div class="w-full flex justify-between h-full overflow-hidden bg-elevated/60">
+  <div
+    class="w-full flex justify-between h-full overflow-hidden bg-elevated/60"
+  >
     <!-- Main panel -->
     <div class="flex-1 w-full flex flex-col min-w-0 overflow-auto">
       <div class="flex-1 overflow-auto">
@@ -218,7 +236,11 @@ const sidebarTitle = computed(() =>
           <div class="flex-1" />
           <UTooltip :text="showSidebar ? '情報を隠す' : '情報を表示'">
             <UButton
-              :icon="showSidebar ? 'i-lucide-panel-right-close' : 'i-lucide-panel-right-open'"
+              :icon="
+                showSidebar
+                  ? 'i-lucide-panel-right-close'
+                  : 'i-lucide-panel-right-open'
+              "
               color="neutral"
               variant="ghost"
               @click="showSidebar = !showSidebar"
@@ -226,8 +248,14 @@ const sidebarTitle = computed(() =>
           </UTooltip>
         </div>
 
-        <div v-if="!isNew && customerStore.loading" class="flex justify-center py-20">
-          <UIcon name="i-lucide-loader-circle" class="w-8 h-8 animate-spin text-muted" />
+        <div
+          v-if="!isNew && customerStore.loading"
+          class="flex justify-center py-20"
+        >
+          <UIcon
+            name="i-lucide-loader-circle"
+            class="w-8 h-8 animate-spin text-muted"
+          />
         </div>
 
         <UForm
@@ -245,25 +273,35 @@ const sidebarTitle = computed(() =>
               label="顧客名"
               description="法人名またはお客様名を入力してください。"
               required
-              class="flex max-sm:flex-col justify-between items-start gap-4"
+              class="gap-1 w-full"
             >
-              <UInput v-model="state.name" placeholder="株式会社〇〇" autocomplete="off" />
+              <UInput
+                v-model="state.name"
+                class="w-full"
+                placeholder="株式会社〇〇"
+                autocomplete="off"
+              />
             </UFormField>
             <USeparator />
             <UFormField
               name="furigana"
               label="ふりがな"
               description="顧客名のふりがなを入力してください。"
-              class="flex max-sm:flex-col justify-between items-start gap-4"
+              class="gap-1"
             >
-              <UInput v-model="state.furigana" placeholder="かぶしきがいしゃ〇〇" autocomplete="off" />
+              <UInput
+                v-model="state.furigana"
+                class="w-full"
+                placeholder="かぶしきがいしゃ〇〇"
+                autocomplete="off"
+              />
             </UFormField>
             <USeparator />
             <UFormField
               name="notes"
               label="備考"
               description="顧客に関するメモを入力できます。"
-              class="flex max-sm:flex-col justify-between items-start gap-4"
+              class="gap-1"
               :ui="{ container: 'w-full' }"
             >
               <UTextarea
@@ -281,14 +319,14 @@ const sidebarTitle = computed(() =>
             <UFormField
               label="タグ"
               description="顧客を分類するタグを追加できます。"
-              class="flex max-sm:flex-col justify-between items-start gap-4"
+              class="gap-1"
             >
               <div class="w-full space-y-2">
                 <div class="flex gap-2">
                   <UInput
                     v-model="newTag"
+                    class="w-full"
                     placeholder="タグを入力..."
-                    class="flex-1"
                     @keyup.enter="addTag"
                   />
                   <UButton
@@ -330,7 +368,13 @@ const sidebarTitle = computed(() =>
                   />
                   <UInput
                     v-model="contact.value"
-                    :placeholder="contact.type === 'email' ? 'example@mail.com' : contact.type === 'phone' ? '03-XXXX-XXXX' : 'FAX番号'"
+                    :placeholder="
+                      contact.type === 'email'
+                        ? 'example@mail.com'
+                        : contact.type === 'phone'
+                          ? '03-XXXX-XXXX'
+                          : 'FAX番号'
+                    "
                     class="flex-1"
                   />
                   <UButton
@@ -342,7 +386,11 @@ const sidebarTitle = computed(() =>
                     title="メインに設定"
                     @click="setPrimaryContact(contact.id)"
                   />
-                  <UIcon v-else name="i-lucide-star" class="w-4 h-4 text-yellow-500" />
+                  <UIcon
+                    v-else
+                    name="i-lucide-star"
+                    class="w-4 h-4 text-yellow-500"
+                  />
                   <UButton
                     v-if="contacts.length > 1"
                     icon="i-lucide-trash"
@@ -354,6 +402,7 @@ const sidebarTitle = computed(() =>
                 </div>
                 <UInput
                   v-model="contact.name"
+                  class="w-full"
                   placeholder="担当者名（任意）"
                 />
               </div>
@@ -390,16 +439,10 @@ const sidebarTitle = computed(() =>
       :class="showSidebar ? 'w-96 border-l border-default' : 'w-0'"
       class="shrink-0 flex flex-col bg-white dark:bg-neutral-800 overflow-hidden transition-all duration-300 ease-in-out"
     >
-      <div class="border-b border-default px-4 py-2 space-y-2">
+      <div class="border-b border-default px-4 pt-2 space-y-2">
         <h2 class="text-sm font-semibold">
           {{ sidebarTitle }}
         </h2>
-        <p
-          v-if="customer?.updatedAt"
-          class="text-xs text-muted"
-        >
-          更新: {{ new Date(customer.updatedAt).toLocaleString('ja-JP') }}
-        </p>
         <div class="flex gap-1">
           <button
             v-for="tab in tabs"
@@ -418,7 +461,7 @@ const sidebarTitle = computed(() =>
         </div>
       </div>
 
-      <div class="flex-1 overflow-auto p-4">
+      <div class="flex-1 overflow-auto py-4 px-2">
         <!-- 基本情報 tab -->
         <div v-if="activeTab === 'basic'" class="space-y-4">
           <template v-if="customer && !isNew">
@@ -468,7 +511,7 @@ const sidebarTitle = computed(() =>
                   登録日
                 </p>
                 <p class="text-sm">
-                  {{ new Date(customer.createdAt).toLocaleDateString('ja-JP') }}
+                  {{ new Date(customer.createdAt).toLocaleDateString("ja-JP") }}
                 </p>
               </div>
               <div>
@@ -476,7 +519,7 @@ const sidebarTitle = computed(() =>
                   最終更新日
                 </p>
                 <p class="text-sm">
-                  {{ new Date(customer.updatedAt).toLocaleDateString('ja-JP') }}
+                  {{ new Date(customer.updatedAt).toLocaleDateString("ja-JP") }}
                 </p>
               </div>
             </div>
@@ -488,7 +531,10 @@ const sidebarTitle = computed(() =>
 
         <!-- 対応履歴 tab -->
         <div v-if="activeTab === 'history'" class="space-y-4">
-          <div v-if="historyTimeline.length === 0" class="text-center py-6 text-muted text-sm">
+          <div
+            v-if="historyTimeline.length === 0"
+            class="text-center py-6 text-muted text-sm"
+          >
             対応履歴はまだありません
           </div>
           <div v-else class="space-y-0">
@@ -502,14 +548,28 @@ const sidebarTitle = computed(() =>
               <div class="flex flex-col items-center">
                 <div
                   class="w-8 h-8 rounded-full flex items-center justify-center"
-                  :class="entry.type === 'proposal' ? 'bg-primary/10 text-primary' : 'bg-success/10 text-success'"
+                  :class="
+                    entry.type === 'proposal'
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-success/10 text-success'
+                  "
                 >
                   <UIcon
-                    :name="entry.type === 'proposal' ? 'i-mdi-form-textbox' : 'i-lucide-activity'"
+                    :name="
+                      entry.type === 'proposal'
+                        ? 'i-mdi-form-textbox'
+                        : 'i-lucide-activity'
+                    "
                     class="size-4"
                   />
                 </div>
-                <div v-if="idx < historyTimeline.length - 1" class="w-px flex-1 bg-default mt-1" />
+                <div
+                  v-if="idx < historyTimeline.length - 1"
+                  class="w-px flex-1 mt-1"
+                  :class="{
+                    'bg-primary': idx !== historyTimeline.length - 1
+                  }"
+                />
               </div>
               <!-- Content -->
               <div class="flex-1 pb-3">
@@ -519,7 +579,7 @@ const sidebarTitle = computed(() =>
                     variant="subtle"
                     size="xs"
                   >
-                    {{ entry.type === 'proposal' ? '提案' : '営業活動' }}
+                    {{ entry.type === "proposal" ? "提案" : "営業活動" }}
                   </UBadge>
                   <span class="text-xs text-muted">{{ entry.code }}</span>
                 </div>
@@ -531,7 +591,7 @@ const sidebarTitle = computed(() =>
                     {{ entry.status }}
                   </UBadge>
                   <span class="text-xs text-muted">
-                    {{ new Date(entry.date).toLocaleDateString('ja-JP') }}
+                    {{ new Date(entry.date).toLocaleDateString("ja-JP") }}
                   </span>
                 </div>
               </div>
@@ -574,7 +634,8 @@ const sidebarTitle = computed(() =>
       </template>
       <template #body>
         <p class="text-sm text-muted">
-          <strong>{{ customer?.name }}</strong> を削除します。この操作は取り消せません。
+          <strong>{{ customer?.name }}</strong>
+          を削除します。この操作は取り消せません。
         </p>
       </template>
       <template #footer>
