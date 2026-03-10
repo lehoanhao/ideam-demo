@@ -34,20 +34,6 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2024-07-11',
 
-  eslint: {
-    config: {
-      stylistic: {
-        commaDangle: 'never',
-        braceStyle: '1tbs'
-      }
-    },
-    checker: false
-  },
-
-  typescript: {
-    typeCheck: false
-  },
-
   nitro: {
     esbuild: {
       options: {
@@ -58,5 +44,19 @@ export default defineNuxtConfig({
         }
       }
     }
+  },
+
+  typescript: {
+    typeCheck: false
+  },
+
+  eslint: {
+    config: {
+      stylistic: {
+        commaDangle: 'never',
+        braceStyle: '1tbs'
+      }
+    },
+    checker: false
   }
 })

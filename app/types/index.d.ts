@@ -473,7 +473,7 @@ export type SaleStatus = 'paid' | 'failed' | 'refunded'
 export interface Mail {
   id: number
   unread?: boolean
-  from: User & { status: 'subscribed' | 'unsubscribed' | 'bounced'; location: string }
+  from: User & { status: 'subscribed' | 'unsubscribed' | 'bounced', location: string }
   subject: string
   body: string
   date: string

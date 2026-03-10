@@ -751,7 +751,7 @@ const fileAttachments = computed(() =>
     </template>
 
     <!-- Image Preview Modal -->
-    <UModal v-model:open="imagePreview as any" :ui="{ content: 'max-w-4xl' }">
+    <UModal v-model:open="imagePreview" :ui="{ content: 'max-w-4xl' }">
       <template #content>
         <div class="relative">
           <img
