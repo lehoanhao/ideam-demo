@@ -3,7 +3,6 @@ import type { StepperItem } from '@nuxt/ui'
 import type { ProposalStatus } from '~/types'
 import {
   useProposalStore,
-  type ProcessHistoryEntry,
   FORM_ROW_FIELDS
 } from '~/stores/proposals'
 import { useManufacturerStore } from '~/stores/manufacturers'
@@ -72,9 +71,9 @@ const statusToStep: Record<ProposalStatus, number> = {
   quoted: 2,
   pricing: 3,
   pending_approval: 4,
-  approved: 6,
-  rejected: 4,
-  confirming: 6,
+  approved: 5,
+  rejected: 3,
+  confirming: 5,
   completed: 6,
   archived: 6
 }
@@ -182,9 +181,8 @@ async function handleSlideApproved() {
         updatedAt: new Date().toISOString()
       })
     }
-    toast.add({ title: '承認しました', color: 'success' })
     showApprovalConfirmModal.value = false
-    navigateTo('/proposals')
+    advanceStatus('approved', '承認しました')
   } catch {
     toast.add({ title: '承認に失敗しました', color: 'error' })
   }
@@ -242,8 +240,7 @@ async function submitApprovalRequest() {
     }
     showApprovalModal.value = false
     selectedApprovers.value = []
-    toast.add({ title: '承認依頼を送信しました', color: 'success' })
-    navigateTo('/proposals')
+    advanceStatus('pending_approval', '承認依頼を送信しました')
   } catch {
     toast.add({ title: '承認依頼に失敗しました', color: 'error' })
   }
@@ -339,15 +336,21 @@ const primaryButtonConfig = computed(() => {
     // approved
     case 'approved':
       return {
-        label: '完了にする',
-        icon: 'i-nrk-media-media-complete',
-        color: 'success' as const
+        label: '顧客確認を開始',
+        icon: 'i-heroicons-phone',
+        color: 'primary' as const
       }
     case 'confirming':
       return {
         label: '完了にする',
         icon: 'i-nrk-media-media-complete',
         color: 'success' as const
+      }
+    case 'completed':
+      return {
+        label: '完了済み',
+        icon: 'i-lucide-check-circle',
+        color: 'neutral' as const
       }
     default:
       return {
@@ -400,6 +403,65 @@ const secondaryButtonConfig = computed(() => {
   }
 })
 
+// --- Status icon map for timeline ---
+const statusIconMap = {
+  draft: 'i-la-firstdraft',
+  submitted: 'i-mdi-cart',
+  quoted: 'i-bi-send',
+  pricing: 'i-fluent-money-calculator-20-regular',
+  pending_approval: 'i-material-symbols-order-approve',
+  approved: 'i-lucide-check',
+  confirming: 'i-heroicons-phone',
+  completed: 'i-nrk-media-media-complete',
+  rejected: 'i-lucide-undo-2',
+  updated: 'i-lucide-save',
+  saved: 'i-la-firstdraft'
+} as const
+
+interface ActionHistoryEntry {
+  action: string
+  icon: string
+  userName: string
+  userAvatar?: string
+  date: string
+}
+
+const actionHistory = ref<ActionHistoryEntry[]>([])
+
+function addTimelineEntry(action: string, icon: string) {
+  actionHistory.value.push({
+    action,
+    icon,
+    userName: '加藤 誠',
+    userAvatar: 'https://ipx.nuxt.com/f_auto,s_192x192/gh_avatar/antfu',
+    date: new Date().toISOString()
+  })
+}
+
+// --- Advance status helper (stay on page, update stepper) ---
+function advanceStatus(newStatus: ProposalStatus, message: string) {
+  if (proposalStore.selectedProposal) {
+    proposalStore.selectedProposal.status = newStatus
+  }
+  currentStep.value = statusToStep[newStatus] ?? currentStep.value
+  addTimelineEntry(message, (statusIconMap as Record<string, string>)[newStatus] || 'i-heroicons-check-circle')
+  toast.add({ title: message, color: 'success' })
+}
+
+// Watch manufacturer modal close to advance status
+watch(showManufacturerModal, (val) => {
+  if (!val && currentStatus.value === 'submitted') {
+    // Modal closed after sending — advance to quoted
+    if (proposalId.value) {
+      proposalStore.updateProposal(proposalId.value, {
+        status: 'quoted',
+        updatedAt: new Date().toISOString()
+      })
+    }
+    advanceStatus('quoted', 'メーカー依頼を送信しました')
+  }
+})
+
 function handlePrimaryClick() {
   switch (currentStatus.value) {
     case 'new':
@@ -415,8 +477,7 @@ function handlePrimaryClick() {
                 updatedAt: new Date().toISOString()
               })
             }
-            toast.add({ title: '仕入れ依頼しました', color: 'success' })
-            navigateTo('/proposals')
+            advanceStatus('submitted', '仕入れ依頼しました')
           } catch {
             toast.add({ title: '依頼に失敗しました', color: 'error' })
           }
@@ -426,11 +487,46 @@ function handlePrimaryClick() {
     case 'submitted':
       showManufacturerModal.value = true
       break
+    case 'quoted':
+      openConfirm(
+        '仕入れ値段決定の確認',
+        '仕入れ値段を決定しますか？',
+        async () => {
+          try {
+            if (proposalId.value) {
+              await proposalStore.updateProposal(proposalId.value, {
+                status: 'pricing',
+                updatedAt: new Date().toISOString()
+              })
+            }
+            advanceStatus('pricing', '仕入れ値段を決定しました')
+          } catch {
+            toast.add({ title: '値段決定に失敗しました', color: 'error' })
+          }
+        }
+      )
+      break
     case 'pricing':
+    case 'rejected':
       showApprovalModal.value = true
       break
     case 'pending_approval':
       showApprovalConfirmModal.value = true
+      break
+    case 'approved':
+      openConfirm('顧客確認の開始', '顧客との確認を開始しますか？', async () => {
+        try {
+          if (proposalId.value) {
+            await proposalStore.updateProposal(proposalId.value, {
+              status: 'confirming',
+              updatedAt: new Date().toISOString()
+            })
+          }
+          advanceStatus('confirming', '顧客確認を開始しました')
+        } catch {
+          toast.add({ title: '処理に失敗しました', color: 'error' })
+        }
+      })
       break
     case 'confirming':
       openConfirm('完了の確認', 'この提案を完了にしますか？', async () => {
@@ -441,8 +537,7 @@ function handlePrimaryClick() {
               updatedAt: new Date().toISOString()
             })
           }
-          toast.add({ title: '完了にしました', color: 'success' })
-          navigateTo('/proposals')
+          advanceStatus('completed', '完了にしました')
         } catch {
           toast.add({ title: '完了処理に失敗しました', color: 'error' })
         }
@@ -466,6 +561,7 @@ function handleSecondaryClick() {
             await proposalStore.updateProposal(proposalId.value, {
               updatedAt: new Date().toISOString()
             })
+            addTimelineEntry('内容を更新しました', statusIconMap.updated)
             toast.add({ title: '更新しました', color: 'success' })
           }
         } catch {
@@ -486,8 +582,7 @@ function handleSecondaryClick() {
                 updatedAt: new Date().toISOString()
               })
             }
-            toast.add({ title: '差し戻しました', color: 'warning' })
-            navigateTo('/proposals')
+            advanceStatus('pricing', '差し戻しました')
           } catch {
             toast.add({ title: '差し戻しに失敗しました', color: 'error' })
           }
@@ -504,8 +599,10 @@ async function handleSaveDraft() {
         status: 'draft',
         updatedAt: new Date().toISOString()
       })
+      addTimelineEntry('下書きを更新しました', statusIconMap.saved)
       toast.add({ title: '下書きを更新しました', color: 'success' })
     } else {
+      addTimelineEntry('下書きを保存しました', statusIconMap.saved)
       toast.add({ title: '下書きを保存しました', color: 'success' })
     }
   } catch {
@@ -602,6 +699,18 @@ const combinedTimeline = computed<TimelineEntry[]>(() => {
         : '管理者',
       action: '差し戻しました',
       icon: 'i-lucide-undo-2'
+    })
+  }
+
+  // Add action history entries (from button clicks)
+  for (const ah of actionHistory.value) {
+    entries.push({
+      type: 'history',
+      date: ah.date,
+      userName: ah.userName,
+      userAvatar: ah.userAvatar,
+      action: ah.action,
+      icon: ah.icon
     })
   }
 
@@ -772,24 +881,13 @@ const budgetTotal = computed(() => {
     </div>
     <!-- Sidebar -->
     <div
-      :class="showSidebar ? 'w-96 border-l border-default' : 'w-0'"
+      :class="showSidebar ? 'w-96 border-l border-default shadow-xl' : 'w-0'"
       class="shrink-0 flex flex-col bg-white dark:bg-neutral-800 overflow-hidden transition-all duration-300 ease-in-out"
     >
-      <div class="border-b border-default px-4 py-2 space-y-2">
-        <h2 class="text-sm font-semibold">
+      <div class="border-b border-default px-0 pt-2 space-y-2">
+        <h2 class="text-sm font-semibold px-4">
           {{ sidebarTitle }}
         </h2>
-        <p
-          v-if="proposalStore.selectedProposal?.updatedAt"
-          class="text-xs text-muted"
-        >
-          更新:
-          {{
-            new Date(proposalStore.selectedProposal.updatedAt).toLocaleString(
-              "ja-JP"
-            )
-          }}
-        </p>
         <div class="flex gap-1">
           <button
             v-for="tab in tabs"
@@ -985,6 +1083,7 @@ const budgetTotal = computed(() => {
             :color="primaryButtonConfig.color"
             block
             :trailing-icon="primaryButtonConfig.icon"
+            :disabled="currentStatus === 'completed'"
             @click="handlePrimaryClick"
           />
         </div>

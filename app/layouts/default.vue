@@ -5,7 +5,7 @@ import { useAuthStore } from '~/stores/auth'
 const route = useRoute()
 const toast = useToast()
 const authStore = useAuthStore()
-
+const appConfig = useAppConfig()
 // Initialize auth session on layout mount
 onMounted(async () => {
   if (!authStore.isAuthenticated) {
@@ -15,196 +15,84 @@ onMounted(async () => {
 
 const open = ref(false)
 
-const mainLinks = [
-  {
-    label: '案件',
-    icon: 'i-lucide-file-text',
-    to: '/proposals',
-    exact: false,
-    chip: {
-      color: 'error',
-      size: 'md'
-    }
-  },
-  {
-    label: '顧客',
-    icon: 'i-lucide-users',
-    to: '/customers',
-    exact: false
-  },
-  {
-    label: 'メーカー',
-    icon: 'i-lucide-building-2',
-    to: '/manufacturers',
-    exact: false
-  },
-  // 営業活動
-  {
-    label: '営業活動',
-    icon: 'i-lucide-activity',
-    to: '/activities',
-    exact: false
-  },
-  // FAX送信履歴
-  {
-    label: '送信履歴',
-    icon: 'i-lucide-send',
-    to: '/communications',
-    exact: false
-  },
-  {
-    // setting
-    label: '設定',
-    to: '/settings',
-    icon: 'i-lucide-settings',
-    exact: false
-  }
-]
-
-const links = [
-  [
+const mainLinks = computed(() => {
+  return [
     {
-      label: 'ダッシュボード',
-      icon: 'i-lucide-chart-column',
-      to: '/',
-      onSelect: () => {
-        open.value = false
-      }
-    },
-    {
-      label: '提案管理',
-      icon: 'i-lucide-file-text',
+      label: '案件',
+      icon: 'i-streamline-plump-news-paper',
+      iconActive: 'i-streamline-plump-news-paper-solid',
       to: '/proposals',
-      onSelect: () => {
-        open.value = false
-      }
+      exact: false,
+      chip: {
+        color: 'error',
+        size: 'md'
+      },
+      color: 'blue'
     },
     {
-      label: '顧客管理',
-      icon: 'i-lucide-users',
+      label: '顧客',
+      icon: 'i-streamline-ultimate-customer-relationship-management-lead-management-1',
+      iconActive:
+        'i-streamline-ultimate-customer-relationship-management-lead-management-1-bold',
       to: '/customers',
-      onSelect: () => {
-        open.value = false
-      }
+      exact: false,
+      color: 'emerald'
     },
     {
-      label: 'メーカー管理',
-      icon: 'i-lucide-building-2',
+      label: 'メーカー',
+      icon: 'i-fluent-building-people-20-regular',
+      iconActive: 'i-fluent-building-people-20-filled',
       to: '/manufacturers',
-      onSelect: () => {
-        open.value = false
-      }
+      exact: false,
+      color: 'amber'
     },
-    {
-      label: '仕入れ管理',
-      icon: 'i-lucide-shopping-cart',
-      to: '/procurements',
-      onSelect: () => {
-        open.value = false
-      }
-    },
-    {
-      label: '承認管理',
-      icon: 'i-lucide-check-circle',
-      to: '/approvals',
-      onSelect: () => {
-        open.value = false
-      }
-    },
+    // 営業活動
     {
       label: '営業活動',
-      icon: 'i-lucide-activity',
+      icon: 'i-icon-park-outline-bank-card-one',
+      iconActive: 'i-icon-park-solid-bank-card-one',
       to: '/activities',
-      onSelect: () => {
-        open.value = false
-      }
+      exact: false,
+      color: 'violet'
     },
-    {
-      label: '日報',
-      icon: 'i-lucide-notebook-pen',
-      to: '/reports',
-      onSelect: () => {
-        open.value = false
-      }
-    },
+    // FAX送信履歴
     {
       label: '送信履歴',
-      icon: 'i-lucide-send',
+      icon: 'i-icon-park-outline-inbox-r',
+      iconActive: 'i-icon-park-solid-inbox-r',
       to: '/communications',
-      onSelect: () => {
-        open.value = false
-      }
+      exact: false,
+      color: 'fuchsia'
     },
     {
-      label: 'タグ管理',
-      icon: 'i-lucide-tags',
-      to: '/tags',
-      onSelect: () => {
-        open.value = false
-      }
-    },
-    {
+      // setting
       label: '設定',
       to: '/settings',
-      icon: 'i-lucide-settings',
-      defaultOpen: true,
-      type: 'trigger',
-      children: [
-        {
-          label: '全般',
-          to: '/settings',
-          exact: true,
-          onSelect: () => {
-            open.value = false
-          }
-        },
-        {
-          label: 'メンバー',
-          to: '/settings/members',
-          onSelect: () => {
-            open.value = false
-          }
-        },
-        {
-          label: '通知',
-          to: '/settings/notifications',
-          onSelect: () => {
-            open.value = false
-          }
-        },
-        {
-          label: 'セキュリティ',
-          to: '/settings/security',
-          onSelect: () => {
-            open.value = false
-          }
-        }
-      ]
+      icon: 'i-icon-park-twotone-setting',
+      iconActive: 'i-icon-park-solid-setting',
+      exact: false,
+      color: 'red'
     }
-  ],
-  [
-    {
-      label: 'フィードバック',
-      icon: 'i-lucide-message-circle',
-      to: 'https://github.com/nuxt-ui-templates/dashboard',
-      target: '_blank'
-    },
-    {
-      label: 'ヘルプ',
-      icon: 'i-lucide-info',
-      to: 'https://github.com/nuxt-ui-templates/dashboard',
-      target: '_blank'
-    }
-  ]
-] satisfies NavigationMenuItem[][]
+  ].map(link => ({
+    ...link,
+    active: route.path.startsWith(link.to)
+  }))
+})
 
-const groups = computed(() => [
-  {
-    id: 'links',
-    label: '移動先',
-    items: links.flat()
-  }
-])
+const activeLink = computed(() => {
+  return mainLinks.value.find(link => link.active)
+})
+
+// watch activeLink and update appConfig.ui.colors.primary to activeLink.color
+watch(
+  activeLink,
+  (link) => {
+    if (link) {
+      appConfig.ui.colors.primary = link.color
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   const cookie = useCookie('cookie-consent')
@@ -245,27 +133,32 @@ onMounted(async () => {
       }"
     >
       <template #default="{ collapsed }">
-        <UButton
-          icon="i-material-symbols-menu"
-          size="md"
-          color="neutral"
-          variant="subtle"
-          class="justify-center mt-3"
-        />
-
+        <AppLogo :collapsed="collapsed" class="mx-auto mt-2" />
         <UNavigationMenu
-          class="mt-4"
+          class="mt-0"
           collapsed
           :items="mainLinks"
           orientation="vertical"
-          color="primary"
+          :color="'primary'"
           variant="pill"
           :ui="{
             list: '',
-            link: 'flex-col gap-1.5',
+            link: 'flex-col gap-1.5 data-active:bg-primary-500/20',
             linkLabel: 'block text-[10px]/3 text-center'
           }"
-        />
+        >
+          <template #item="{ item }">
+            <div class="flex flex-col items-center gap-1">
+              <UIcon
+                :name="item.active ? item.iconActive : item.icon"
+                class="text-2xl"
+              />
+              <span v-if="!collapsed" class="text-[12px] font-medium">
+                {{ item.label }}
+              </span>
+            </div>
+          </template>
+        </UNavigationMenu>
       </template>
       <template #footer="{ collapsed }">
         <UserMenu :collapsed="true" />

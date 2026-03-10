@@ -81,6 +81,7 @@ function handleManufacturerConfirm(manufacturer: { name: string }) {
       variant="outline"
       color="neutral"
       block
+      size="xs"
       @click="store.addFormRow()"
     />
 

@@ -1,47 +1,56 @@
 <script setup lang="ts">
+import type { NavigationMenuItem } from '@nuxt/ui'
+
 definePageMeta({ layout: 'default' })
 
-const route = useRoute()
+const sidebarCollapsed = ref(false)
 
-const navItems = computed(() => [
+const links = [
   {
     label: 'タグ管理',
     icon: 'i-lucide-tags',
-    to: '/settings',
-    active: route.path === '/settings' || route.path === '/settings/tags'
+    to: '/settings'
   },
   {
     label: 'アカウント管理',
     icon: 'i-lucide-users',
-    to: '/settings/accounts',
-    active: route.path === '/settings/accounts'
+    to: '/settings/accounts'
   },
   {
     label: '通知設定',
     icon: 'i-lucide-bell',
-    to: '/settings/notifications',
-    active: route.path === '/settings/notifications'
+    to: '/settings/notifications'
   },
   {
     label: 'セキュリティ',
     icon: 'i-lucide-shield',
-    to: '/settings/security',
-    active: route.path === '/settings/security'
+    to: '/settings/security'
   }
-])
+] satisfies NavigationMenuItem[]
 </script>
 
 <template>
   <UDashboardSidebar
-    id="settings-sidebar"
+    id="default"
+    v-model:collapsed="sidebarCollapsed"
     collapsible
     resizable
-    :min-size="15"
-    :default-size="20"
-    :max-size="30"
-    class="bg-elevated/60"
+    class="bg-elevated/25 overflow-hidden"
+    :ui="{ footer: 'lg:border-t lg:border-default' }"
   >
-    <UNavigationMenu :items="navItems" />
+    <template #header="{ collapsed }">
+      <AppTitle :collapsed="collapsed" />
+    </template>
+
+    <template #default="{ collapsed }">
+      <UNavigationMenu
+        :collapsed="collapsed"
+        :items="links"
+        orientation="vertical"
+        tooltip
+        popover
+      />
+    </template>
   </UDashboardSidebar>
 
   <NuxtPage />

@@ -93,7 +93,7 @@ const labels = [
     :ui="{ footer: 'lg:border-t lg:border-default' }"
   >
     <template #header="{ collapsed }">
-      <AppLogo :collapsed="collapsed" />
+      <AppTitle :collapsed="collapsed" />
     </template>
 
     <template #default="{ collapsed }">
